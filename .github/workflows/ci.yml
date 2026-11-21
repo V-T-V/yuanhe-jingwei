@@ -1,0 +1,33 @@
+# 元和经纬 · push/PR 门禁（承方舆经纬 ci.yml 结构）
+# run_tests.py 自跑无头浏览器断言页（TESTLOG 协议），不挑浏览器内核：
+# 探测顺序 YH_BROWSER → Edge → Chrome（run_tests.py CANDS，env 优先即 Linux 便携）。
+# CI 注入 YH_BROWSER=/usr/bin/google-chrome + YH_BASE 指向自起服务，其余步骤照本地口径原样跑。
+# 依赖说明：本站测试栈（run_tests.py / tools/lint.py）纯 stdlib，无需 pip 装包
+#（HHH 装 requests+bs4 是其 verify/断言管线需要，本站无此需求）。
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 浏览器存在性检验
+        run: |
+          # 2026-11-17 教训（承 HHH ci.yml）：ubuntu 镜像迁移期 chromium-browser 是 snap
+          # 过渡壳，容器内不可用且 || true 吞错把「确定坏」变「随机坏」——
+          # CI 一律用 runner 预装 Chrome，缺件即红，绝不兜底
+          test -x /usr/bin/google-chrome && /usr/bin/google-chrome --version
+      - name: 起本地服务
+        run: |
+          python -m http.server 9600 --bind 127.0.0.1 &
+          sleep 2
+          curl -sf http://127.0.0.1:9600/index.html -o /dev/null && echo server-up
+      - name: 无头回归 run_tests.py（lint + 21 数据断言 + 2 TESTLOG 断言页）
+        env:
+          YH_BROWSER: /usr/bin/google-chrome
+          YH_BASE: http://127.0.0.1:9600/
+        run: python run_tests.py

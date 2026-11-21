@@ -1,5 +1,7 @@
 # 元和经纬 · 元和郡县图志
 
+[![CI](https://github.com/V-T-V/yuanhe-jingwei/actions/workflows/ci.yml/badge.svg)](https://github.com/V-T-V/yuanhe-jingwei/actions/workflows/ci.yml)
+
 《元和郡县图志》（唐·李吉甫，元和八年 813 成书）数字人文站——十道四十七镇州县舆图、
 分镇循读、全书全文检索。文本自识典古籍（钦定四库全书本）逐章抓取解析，缺卷如实标注。
 
