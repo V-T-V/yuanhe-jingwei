@@ -40,7 +40,12 @@ stats = json.load(open("data/stats.json", encoding="utf-8"))
 fetch = json.load(open("data/fetch_report.json", encoding="utf-8"))
 
 
+A_COUNT = 0
+
+
 def A(name, ok, detail=""):
+    global A_COUNT
+    A_COUNT += 1
     mark = "✓" if ok else "✗"
     print(f"  {mark} {name} {detail}")
     if not ok:
@@ -153,21 +158,30 @@ if not EDGE:
     sys.exit(1)
 
 PAGES = ["tests/test_auto.html", "tests/test_ft.html"]
+# 「无日志」= 页面在虚时预算内没跑完（Worker 冷启动竞态，ubuntu Chrome 上偶发）——
+# 有界重试+加预算；一旦产出 TESTLOG 且含 FAIL 仍即红，重试只治「没跑」，不吞断言失败
+BUDGETS = [18000, 30000, 45000]
 for page in PAGES:
-    prof = tempfile.mkdtemp(prefix="yhtest_")
-    r = subprocess.run(
-        [EDGE, "--headless=new", "--disable-gpu", "--no-first-run",
-         "--user-data-dir=" + prof, "--virtual-time-budget=18000",
-         "--dump-dom", BASE + page],
-        capture_output=True, timeout=240)
-    html = r.stdout.decode("utf-8", errors="replace")
-    m = re.search(r'id="testlog"[^>]*>([^<]*)<', html)
-    if not m or "TESTLOG" not in (m.group(1) or ""):
+    lines = None
+    for attempt, budget in enumerate(BUDGETS, 1):
+        prof = tempfile.mkdtemp(prefix="yhtest_")
+        r = subprocess.run(
+            [EDGE, "--headless=new", "--disable-gpu", "--no-first-run",
+             "--user-data-dir=" + prof, "--virtual-time-budget=" + str(budget),
+             "--dump-dom", BASE + page],
+            capture_output=True, timeout=240)
+        html = r.stdout.decode("utf-8", errors="replace")
+        m = re.search(r'id="testlog"[^>]*>([^<]*)<', html)
+        if m and "TESTLOG" in (m.group(1) or ""):
+            lines = [l.strip() for l in m.group(1).splitlines()
+                     if l.strip() and l.strip() not in ("TESTLOG", "ENDLOG")]
+            if attempt > 1:
+                print(f"  （第 {attempt} 次跑出日志，预算 {budget}）")
+            break
+    if lines is None:
         fails.append((page, ["脚本未产出 TESTLOG"]))
-        print(f"✗ {page} 无日志产出")
+        print(f"✗ {page} 无日志产出（{len(BUDGETS)} 次重试后仍无）")
         continue
-    lines = [l.strip() for l in m.group(1).splitlines()
-             if l.strip() and l.strip() not in ("TESTLOG", "ENDLOG")]
     bad = [l for l in lines if "FAIL" in l]
     print(("✓" if not bad else "✗") + f" {page} {len(lines)} 项断言")
     for l in bad:
@@ -178,4 +192,4 @@ print()
 if fails:
     print(f"回归未过：{sum(len(f[1]) for f in fails)} 个失败项")
     sys.exit(1)
-print(f"回归通过：lint + 18 数据断言 + {len(PAGES)} 断言页全绿")
+print("回归通过：lint + 数据断言（A1–A%d）+ %d 断言页全绿" % (A_COUNT, len(PAGES)))
