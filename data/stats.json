@@ -1,8 +1,8 @@
 {
- "states": 145,
- "states_coord": 145,
- "counties_listed": 805,
- "county_entries": 784,
+ "states": 227,
+ "states_coord": 227,
+ "counties_listed": 1081,
+ "county_entries": 1101,
  "daos_present": [
   "关内道",
   "河南道",
@@ -10,10 +10,11 @@
   "河北道",
   "山南道",
   "江南道",
-  "剑南道"
+  "剑南道",
+  "岭南道"
  ],
- "zhens_text": 42,
- "zhens_lost": 8,
+ "zhens_text": 51,
+ "zhens_lost": 2,
  "per_dao": {
   "关内道": {
    "states": 23,
@@ -51,18 +52,18 @@
    "lost": 2
   },
   "剑南道": {
-   "states": 5,
-   "xian": 10,
+   "states": 35,
+   "xian": 142,
    "lost": 14
   },
   "岭南道": {
-   "states": 0,
-   "xian": 0,
+   "states": 32,
+   "xian": 107,
    "lost": 0
   },
   "陇右道": {
-   "states": 0,
-   "xian": 0,
+   "states": 20,
+   "xian": 37,
    "lost": 0
   }
  }

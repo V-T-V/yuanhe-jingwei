@@ -79,13 +79,13 @@ check(os.path.exists("data/text/juanshou.js"), "卷首分片存在")
 frag = open(shards[0], encoding="utf-8").read() if shards else ""
 check("YHTEXT" in frag, "分片写入 YHTEXT 全局")
 
-# ── 6. 闭包安全（let 闭包量不经 window）──
+# ── 6. 闭包安全（let 闭包量不经 window 赋值；__NOTILES__ 测试旗读取豁免）──
 print("── 6. 闭包安全")
 wlet = []
 for f in glob.glob("js/*.js"):
     c = open(f, encoding="utf-8").read()
-    wlet += [f"{f}:{mm}" for mm in re.findall(r"window\.(_\w+)\b", c)]
-check(not wlet, f"无 window._闭包量（违 {wlet[:3] if wlet else '无'}）")
+    wlet += [f"{f}:{mm}" for mm in re.findall(r"window\.(_\w+)\s*=[^=]", c)]
+check(not wlet, f"无 window._闭包量赋值（违 {wlet[:3] if wlet else '无'}）")
 
 # ── 7. SW 缓存清单 ──
 print("── 7. SW 覆盖")

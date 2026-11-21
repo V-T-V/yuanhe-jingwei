@@ -69,11 +69,17 @@ def parse_chapter(html: str):
     return title, paras, nxt
 
 
-def valid_body(paras):
-    """正文校验：非空、含足量汉字、无乱码特征字（挑战页/乱码页不过）。"""
+def valid_body(paras, html=""):
+    """正文校验：段落+标题合并后至少 2 个汉字、无乱码特征字（挑战页/乱码页不过）。
+    岭南残卷有正文仅「谅州：附贡」数字的碎片页——结构真实，须放行。"""
     body = "".join(paras)
+    if html:
+        m = re.search(r"<article[^>]*>(.*?)</article>", html, re.S)
+        if m:
+            body += re.sub(r"<[^>]+>", "", m.group(1))
+    body = body.replace("下一篇", "")
     cjk = len(re.findall(r"[一-鿿]", body))
-    return bool(body) and cjk >= 6 and not MOJI_MARK.search(body)
+    return cjk >= 2 and not MOJI_MARK.search(body)
 
 
 def repair_mojibake(html):
@@ -107,14 +113,14 @@ def fetch_one(path):
             r.raise_for_status()
             html = r.content.decode("utf-8", errors="replace")
             _, paras, _ = parse_chapter(html)
-            if paras and not valid_body(paras):
+            if not valid_body(paras, html):
                 fixed = repair_mojibake(html)
                 _, paras2, _ = parse_chapter(fixed)
                 if paras2 and valid_body(paras2):
                     print("  ↻ 乱码页自愈成功（gbk 逆解码）")
                     return fixed
                 raise RuntimeError("正文校验不过（疑似乱码页）")
-            if not paras and "<article" not in html:
+            if "<article" not in html:
                 raise RuntimeError("挑战页/无正文")
             return html
         except Exception as e:
@@ -146,7 +152,7 @@ def fetch_all(force=False):
     cached = [] if force else cached_chain()
     path = None
     for c in cached:
-        ok = valid_body(c["paras"])
+        ok = valid_body(c["paras"], c["html"])
         if ok:
             report.append({"idx": c["idx"], "title": c["title"], "paras": c["paras"],
                            "url": None, "next": c["next"], "cached": True})

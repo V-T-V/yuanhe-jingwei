@@ -6,6 +6,7 @@ data_raw/sdgj/*.html → data/text/<dao_id>.js（懒加载）+ data/text/juansho
 运行：python tools/build_text.py（须在 build_data.py 之后——州名清单同源）
 """
 import glob
+import importlib.util
 import json
 import os
 import re
@@ -27,12 +28,9 @@ def strip_tags(s):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    for f in sorted(glob.glob(os.path.join(RAW, "*.html"))):
-        pass  # 结构见下——统一在块流中处理
-
     sys_path = os.path.join(ROOT, "tools", "build_data.py")
-    spec = __import__("importlib.util", fromlist=["util"]).util.spec_from_file_location("bd", sys_path)
-    bd = __import__("importlib.util", fromlist=["util"]).util.module_from_spec(spec)
+    spec = importlib.util.spec_from_file_location("bd", sys_path)
+    bd = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(bd)
     blocks = bd.parse_blocks()
 
@@ -72,6 +70,13 @@ def main():
             dao_texts.setdefault(cur_dao, {}).setdefault("__dao__", [])
             dao_texts[cur_dao]["__dao__"].append(t)
             continue
+        # 州名块带道修正（陇右残帙等）——与 build_data 同口径
+        mz0 = ZHOU_RE.match(t)
+        if mz0:
+            dao_name2 = bd.DAO_OVERRIDE.get(mz0.group(1))
+            if dao_name2 and DAO_ID.get(dao_name2) and DAO_ID[dao_name2] != cur_dao:
+                cur_dao = DAO_ID[dao_name2]
+                cur_state = None
         m = ZHOU_RE.match(t)
         if m:
             cur_state = m.group(1)
