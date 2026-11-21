@@ -24,8 +24,8 @@ jobs:
       - name: 起本地服务
         run: |
           python -m http.server 9600 --bind 127.0.0.1 &
-          sleep 2
-          curl -sf http://127.0.0.1:9600/index.html -o /dev/null && echo server-up
+          # 就绪探针：重试只治冷启动竞态，起不来照样红（非吞错）
+          curl -sf --retry 8 --retry-delay 2 --retry-connrefused http://127.0.0.1:9600/index.html -o /dev/null && echo server-up
       - name: 无头回归 run_tests.py（lint + 21 数据断言 + 2 TESTLOG 断言页）
         env:
           YH_BROWSER: /usr/bin/google-chrome
