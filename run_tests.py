@@ -4,6 +4,7 @@
   2) 数据断言（≥10 项，Python 侧直查产物）
   3) 无头浏览器断言页（TESTLOG 协议）
   退出码 0=全绿 / 1=有失败。本地服务：python -m http.server 9600"""
+import io
 import json
 import os
 import re
@@ -11,6 +12,9 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
@@ -72,6 +76,29 @@ A("A14 八到标签存而文佚如实记",
   "标签有/无两态皆见")
 A("A15 道晕配色十道齐色", all(d.get("color") for d in sd["daos"]))
 
+# ── P2：互查桥 + 导出 + 论文 ──
+xraw = open("data/xref_hy.js", encoding="utf-8").read()
+xref = json.loads(xraw[xraw.find("{"): xraw.rfind("}") + 1])
+xm = xref["meta"]
+A("A16 唐宋互查桥自洽", xm["tang_states"] == len(states)
+  and xm["matched"] + xm["unmatched"] == xm["tang_states"]
+  and xm["matched"] >= 150 and xm["same_name"] + xm["renamed"] == xm["matched"],
+  f"同名 {xm['same_name']} · 异名 {xm['renamed']} · 无对应 {xm['unmatched']}（存疑 {xm['unmatched_doubt']}）· 异隶 {xm['yili']}")
+zc = open("docs/export/元和经纬-州治对照.csv", "rb").read()
+xc = open("docs/export/元和经纬-县名录.csv", "rb").read()
+gj = json.load(open("docs/export/元和经纬-州治点位.geojson", encoding="utf-8"))
+km = open("docs/export/元和经纬-州治点位.kml", encoding="utf-8").read()
+n_zc = len(zc.decode("utf-8-sig").strip().splitlines()) - 1
+n_xc = len(xc.decode("utf-8-sig").strip().splitlines()) - 1
+A("A17 导出三格式同口径（CSV 带 BOM）",
+  zc[:3] == b"\xef\xbb\xbf" and xc[:3] == b"\xef\xbb\xbf"
+  and n_zc == stats["states"] and n_xc == stats["counties_listed"]
+  and len(gj["features"]) == stats["states"]
+  and km.count("<Placemark>") == stats["states"],
+  f"州 {n_zc} 行 · 县 {n_xc} 行 · 点位 {len(gj['features'])}")
+A("A18 论文 PDF 在位", os.path.exists("docs/元和经纬-数字人文.pdf")
+  and os.path.getsize("docs/元和经纬-数字人文.pdf") > 50000, "元和经纬-数字人文.pdf")
+
 # ── 3. 本地服务健康检查 ──
 try:
     urllib.request.urlopen(BASE + "index.html", timeout=3).read()
@@ -117,4 +144,4 @@ print()
 if fails:
     print(f"回归未过：{sum(len(f[1]) for f in fails)} 个失败项")
     sys.exit(1)
-print(f"回归通过：lint + 15 数据断言 + {len(PAGES)} 断言页全绿")
+print(f"回归通过：lint + 18 数据断言 + {len(PAGES)} 断言页全绿")

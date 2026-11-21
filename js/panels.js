@@ -173,3 +173,144 @@ function openAbout(){
     <div class="hint">县治多数未能定位（传本无八到里程可推），图中县点仅附郭；贡赋品类无法统计（原文佚）；剑南道卷帙残甚。静态本地站，无追踪，首访后可离线（Service Worker）。</div>`;
   showPanel();
 }
+
+/* ═══════════ 唐宋对照 · 寰宇互查桥（data/xref_hy.js，build_xref_hy.py 生成） ═══════════ */
+function xrefLink(m){
+  return "../TPHY/#dao=" + m.id + "&zhou=" + encodeURIComponent(m.n);
+}
+function openXref(){
+  vset("唐宋对照", "桥");
+  const M = YHXREF.meta;
+  const badges = m => {
+    let b = "";
+    if (m.kind === "同治异名") b += `<span class="xb xb-r">改名</span>`;
+    if (m.sj) b += `<span class="xb xb-s">${m.sj}</span>`;
+    if (m.yili) b += `<span class="xb xb-y">异隶</span>`;
+    return b;
+  };
+  /* 按道分组的对照表 */
+  const groups = YHXREF.byDao.map(g=>{
+    const rows = YHXREF.rows.filter(r=>r.dao === g.dao).map(r=>{
+      if (r.m){
+        return `<li data-dao="${g.id}" data-zhou="${r.n}">
+          <span class="fn">${r.n}</span>
+          <span class="fnow">${r.now ? "今" + r.now : ""}</span>
+          <span class="fct">${r.m.n}${badges(r.m)}</span>
+          <a class="xgo" href="${xrefLink(r.m)}" target="_blank" rel="noopener" title="于寰宇经纬开此条">↗</a></li>`;
+      }
+      return `<li class="lostrow">
+          <span class="fn" style="color:var(--ink-faint)">${r.n}</span>
+          <span class="fnow">${r.why}</span></li>`;
+    }).join("");
+    const head = g.dao === "淮南道" ? `${g.dao}（唐整道卷佚，桥无所出）`
+      : `${g.dao} <span style="color:var(--ink-faint)">·同名 ${g.same} ·改名 ${g.renamed} ·无对应 ${g.unmatched}${g.yili ? " ·异隶 " + g.yili : ""}${g.sj ? " ·升降 " + g.sj : ""}</span>`;
+    return `<div class="p-cap" style="margin-top:10px">${head}</div><ul class="ful">${rows}</ul>`;
+  }).join("");
+  /* 样例：元和原文句 × 寰宇对应条目 */
+  const samples = YHXREF.samples.map((s,i)=>`
+    <div class="xsamp">
+      <div class="xs-head"><b>唐 · ${s.tn}</b>${s.kind === "同治异名" ? '<span class="xb xb-r">改名</span>' : ""}${s.sj ? `<span class="xb xb-s">${s.sj}</span>` : ""}${s.yili ? '<span class="xb xb-y">异隶</span>' : ""}</div>
+      <div class="xs-q">「${s.tq}」<span class="xs-src">——元和郡县图志</span></div>
+      <div class="xs-head" style="margin-top:6px"><b>宋 · ${s.sn}</b>
+        <a class="xgo" href="../TPHY/#dao=${s.sid}&zhou=${encodeURIComponent(s.sn)}" target="_blank" rel="noopener">↗寰宇</a></div>
+      <div class="xs-q">「${s.sq}」<span class="xs-src">——太平寰宇记</span></div>
+    </div>`).join("");
+  pbody.innerHTML = `
+    <div class="p-kicker">元和（唐·813）× 寰宇（宋·977）州府对照 · 凡计数出自 tools/build_xref_hy.py</div>
+    <div class="stat-strip" style="margin:2px 0 10px">
+      <div class="st"><b>${M.tang_states}</b><span>唐州府</span></div>
+      <div class="st"><b>${M.matched}</b><span>得宋对应</span></div>
+      <div class="st"><b>${M.same_name}</b><span>同名</span></div>
+      <div class="st"><b>${M.renamed}</b><span>同治异名</span></div>
+      <div class="st"><b>${M.yili}</b><span>同州异隶</span></div>
+      <div class="st"><b>${M.unmatched}</b><span>无对应</span></div>
+    </div>
+    <div class="p-cap">样例 · 元和原文 × 寰宇条目</div>
+    ${samples}
+    <div class="hint">同名=去府/州/军/监尾后同名且地理今名相合；同治异名=治所同今地而名异（唐宋间升降改置，如京兆府↔雍州、汴州↔開封府、恒州↔鎮州）。异隶三源并注：唐方镇移隶回流（濠/安/黄/蕲）、宋分道改制（渝/成）、寰宇站个别道标出入（信/昌，地理今名俱合）。同名异地（唐渭州≠宋渭州、河北景州≠岭南景州）与寰宇佚卷（江南西道卷113–119）所失诸州，如实计「无对应」，不以似是者充数。</div>
+    <div class="p-cap">全表 · 按唐道分组</div>
+    ${groups}
+    <div class="hint">↗ 于姊妹站「寰宇经纬」打开对应条目（相对路径 ../TPHY/——需父目录同根服务，见 README）。宋侧另有 ${M.song_new} 条（军监新置、四夷、唐佚之州）无唐州对应，不计入唐侧。</div>`;
+  pbody.querySelectorAll(".ful li[data-zhou]").forEach(li=>li.onclick=()=>{
+    const dao = YH.daos.find(d=>d.id === li.dataset.dao);
+    const u = dao && dao.states.find(x=>x.n === li.dataset.zhou);
+    if (u) openState(dao, u);
+  });
+  pbody.querySelectorAll("a.xgo").forEach(a=>a.onclick=e=>e.stopPropagation());
+  showPanel();
+}
+
+/* ═══════════ 州县导出（与 tools/export_data.py 同口径：CSV BOM / KML / GeoJSON） ═══════════ */
+function exportRows(){
+  /* 州表：道/镇/州府/类/治所今地(依据)/纬/经/src/置信/卷/管县/坐标注记 */
+  const zhou = [];
+  YH.daos.forEach(d=>d.states.forEach(u=>{
+    zhou.push([d.name, u.zhen || "", u.n, u.n.endsWith("府") ? "府" : "州",
+      u.now || "", (u.c ? u.c[0] : ""), (u.c ? u.c[1] : ""), u.src || "derived",
+      u.conf === 2 ? "推" : "确", u.juan || "", (u.xian || []).length,
+      "整编今地坐标（非考古定位）"]);
+  }));
+  const xian = [];
+  YH.daos.forEach(d=>d.states.forEach(u=>(u.xian || []).forEach((x, i)=>{
+    xian.push([d.name, u.n, x, i === 0 ? "附郭" : "属县",
+      i === 0 ? "与州治同治（" + (u.now || "") + "）" : "名录存真，治所未定位"]);
+  })));
+  return {zhou, xian};
+}
+function dlBlob(content, mime, fname){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], {type: mime}));
+  a.download = fname;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+}
+function csvOf(rows){
+  const NL = String.fromCharCode(10), BOM = String.fromCharCode(0xFEFF);
+  return BOM + rows.map(r=>r.join(",")).join(NL);
+}
+function openExport(){
+  vset("导出", "集");
+  const E = exportRows();
+  const M = YHXREF ? YHXREF.meta.matched : "";
+  pbody.innerHTML = `
+    <div class="p-kicker">古今对照导出 · 与 tools/export_data.py 同口径（${E.zhou.length} 州 / ${E.xian.length} 县）</div>
+    <div class="readrow" style="flex-direction:column;align-items:stretch;gap:8px">
+      <button class="readfull" id="ex-zcsv">⤓ 州治对照 CSV（${E.zhou.length} 行 · 带 BOM）</button>
+      <button class="readfull" id="ex-xcsv">⤓ 县名录 CSV（${E.xian.length} 行 · 带 BOM）</button>
+      <button class="readfull" id="ex-kml">⤓ 州治点位 KML（Google Earth）</button>
+      <button class="readfull" id="ex-geo">⤓ 州治点位 GeoJSON</button>
+    </div>
+    <div class="p-cap">字段口径</div>
+    <div class="hint">州表：道、镇、州府、类（府/州）、治所今地（即今名依据）、纬度、经度、src、置信（确/推）、卷、管县数、坐标注记。县表：道、州、县、附郭/属县、附注。坐标为依唐代政区地理整编之今地（src:derived，非考古定位），附郭县与州同治，余县但存名录不做定位臆测——导出中如实注明。唐宋对照另见「唐宋」页签（匹配 ${M} 州）。</div>`;
+  pbody.querySelector("#ex-zcsv").onclick = ()=>{
+    const {zhou} = exportRows();
+    zhou.unshift(["道","镇","州府","类","治所今地","纬度","经度","src","置信","卷","管县数","坐标注记"]);
+    dlBlob(csvOf(zhou), "text/csv;charset=utf-8", "元和经纬-州治对照.csv");
+  };
+  pbody.querySelector("#ex-xcsv").onclick = ()=>{
+    const {xian} = exportRows();
+    xian.unshift(["道","州","县","附郭/属县","附注"]);
+    dlBlob(csvOf(xian), "text/csv;charset=utf-8", "元和经纬-县名录.csv");
+  };
+  pbody.querySelector("#ex-kml").onclick = ()=>{
+    let pins = "";
+    YH.daos.forEach(d=>d.states.forEach(u=>{
+      if (!u.c) return;
+      pins += `<Placemark><name>${u.n}</name><description>${d.name}${u.zhen ? " · " + u.zhen : ""}${u.now ? " 今" + u.now : ""}（src:derived 置信${u.conf === 2 ? "推" : "确"}）</description><Point><coordinates>${u.c[1]},${u.c[0]},0</coordinates></Point></Placemark>`;
+    }));
+    const kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>元和经纬·州治点位（整编今地坐标）</name>${pins}</Document></kml>`;
+    dlBlob(kml, "application/vnd.google-earth.kml+xml", "元和经纬-州治点位.kml");
+  };
+  pbody.querySelector("#ex-geo").onclick = ()=>{
+    const feats = [];
+    YH.daos.forEach(d=>d.states.forEach(u=>{
+      if (!u.c) return;
+      feats.push({type: "Feature", geometry: {type: "Point", coordinates: [u.c[1], u.c[0]]},
+        properties: {名: u.n, 类: u.n.endsWith("府") ? "府" : "州", 道: d.name, 镇: u.zhen || "",
+          今地: u.now || "", src: u.src || "derived", 置信: u.conf === 2 ? "推" : "确",
+          卷: u.juan || "", 管县: (u.xian || []).length, 坐标注记: "整编今地坐标（非考古定位）"}});
+    }));
+    dlBlob(JSON.stringify({type: "FeatureCollection", features: feats}), "application/geo+json", "元和经纬-州治点位.geojson");
+  };
+  showPanel();
+}

@@ -48,8 +48,13 @@ function railYutu(){
     openDao(YH.daos.find(d=>d.id === el.dataset.dao));
   });
   rail.querySelectorAll(".rzh").forEach(el=>el.onclick=()=>{
-    railOpenZhen = railOpenZhen === el.dataset.zhen ? null : el.dataset.zhen;
+    const opening = railOpenZhen !== el.dataset.zhen;
+    railOpenZhen = opening ? el.dataset.zhen : null;
     railYutu();
+    /* 深链写回：展开镇即入 URL（刷新/分享可复原），收起回落道链 */
+    syncHash(opening
+      ? "dao=" + el.dataset.dao + "&zhen=" + encodeURIComponent(el.dataset.zhen)
+      : "dao=" + el.dataset.dao);
   });
   rail.querySelectorAll(".rsub[data-zhou]").forEach(el=>el.onclick=()=>{
     const dao = YH.daos.find(d=>d.id === el.dataset.dao);
@@ -65,4 +70,41 @@ function railYutu(){
 function highlightRail(daoId){
   rail.querySelectorAll(".ri-dao").forEach(el=>
     el.classList.toggle("on", el.dataset.dao === daoId));
+}
+
+/* ═══════════ 镇视角（#zhen=<镇名> 直达：纲目展开 + 州列聚焦 + 写回） ═══════════ */
+function openZhenView(key){
+  const g = ZHEN_GROUPS.get(key);
+  if (!g) return false;
+  railOpenZhen = key;
+  railYutu();
+  selectDao(g.dao.id);                       /* 道高亮/淡出（其 hash 随后覆写为镇链） */
+  const members = g.states.map(n=>g.dao.states.find(s=>s.n === n)).filter(Boolean);
+  const pts = members.filter(u=>u.c).map(u=>u.c);
+  if (pts.length > 1) setTimeout(()=>safeFly(L.latLngBounds(pts).pad(.3), {duration: 1.1}), 350);
+  else if (pts.length === 1) setTimeout(()=>safeFlyTo(pts[0], 7, {duration: 1.1}), 350);
+  vset(key.replace(/都防御使|节度使|观察使|经略使|防御使/, ""), "镇");
+  const nx = members.reduce((s, u)=>s + (u.xian || []).length, 0);
+  pbody.innerHTML = `
+    <div class="p-kicker">${g.dao.name} · 元和四十七镇体制</div>
+    <div class="p-ju" style="font-size:19px">${key}</div>
+    <div class="stat-strip" style="margin:0 0 12px">
+      <div class="st"><b>${members.length}</b><span>领州</span></div>
+      <div class="st"><b>${nx}</b><span>管县（名录）</span></div>
+    </div>
+    <div class="p-cap">所领州府</div>
+    <ul class="ful">${members.map(u=>`
+      <li data-n="${u.n}">
+        <span class="fn">${u.n}</span>
+        <span class="fnow">${u.now ? "今" + u.now : ""}</span>
+        <span class="fct">${(u.xian || []).length ? u.xian.length + "县" : ""}</span>
+        <span class="arrow">➤</span></li>`).join("")}</ul>
+    <div class="hint">镇视角深链：#zhen=${encodeURIComponent(key)}（写回地址栏，刷新/分享可复原）。点州名入其详情（沿革 · 八到/贡赋佚注 · 辖县）。</div>`;
+  pbody.querySelectorAll(".ful li[data-n]").forEach(li=>li.onclick=()=>{
+    const u = g.dao.states.find(x=>x.n === li.dataset.n);
+    if (u) openState(g.dao, u);
+  });
+  syncHash("dao=" + g.dao.id + "&zhen=" + encodeURIComponent(key));
+  showPanel();
+  return true;
 }

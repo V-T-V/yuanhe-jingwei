@@ -363,3 +363,17 @@ body.seldao .xseal.dim{opacity:.12}
   #searchwrap{flex:1 1 100%}
   footer .right span:not(.link){display:none}
 }
+
+/* ── 唐宋对照 · 互查桥 ── */
+.xb{display:inline-block;font-size:9.5px;letter-spacing:1px;padding:1px 5px;margin-left:4px;
+  border-radius:2px;vertical-align:1px;line-height:1.5}
+.xb-r{color:#8c2c1c;background:rgba(176,58,37,.12)}          /* 改名/同治异名 */
+.xb-s{color:#234a5a;background:rgba(47,93,112,.14)}          /* 升降 州→府 */
+.xb-y{color:#a8792f;background:rgba(168,121,47,.16)}         /* 同州异隶 */
+.xgo{margin-left:8px;color:var(--azur-d);text-decoration:none;font-size:13px;flex:none;border-bottom:1px dashed var(--azur-d)}
+.xgo:hover{color:var(--cinnabar);border-color:var(--cinnabar)}
+.xsamp{border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin:8px 0;
+  background:rgba(246,240,221,.6)}
+.xsamp .xs-head{font-family:"KaiTi","楷体",serif;font-size:14.5px;letter-spacing:2px;color:var(--ink)}
+.xsamp .xs-q{font-size:12px;color:var(--ink-mid);line-height:1.9;margin:4px 2px 0;text-indent:0}
+.xsamp .xs-src{color:var(--ink-faint);font-size:10.5px;letter-spacing:1px}

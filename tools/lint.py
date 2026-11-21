@@ -2,11 +2,15 @@
 """元和经纬 Lint——确定性检查（继承四站会战禁止清单）
    python tools/lint.py  →  0 = 全过 / 1 = 有违规"""
 import glob
+import io
 import json
 import os
 import re
 import subprocess
 import sys
+
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
@@ -168,6 +172,38 @@ for f in sorted(glob.glob("tools/*.py")) + ["run_tests.py"]:
     except Exception as e:
         broken_py.append(f"{f}: {str(e)[:60]}")
 check(not broken_py, f"工具脚本可编译（实得 {broken_py}）")
+
+# ── 14. 互查桥数据完整性（TPHY 只读产物） ──
+print("── 14. 互查桥")
+xref_path = "data/xref_hy.js"
+check(os.path.exists(xref_path), "data/xref_hy.js 存在（python tools/build_xref_hy.py）")
+if os.path.exists(xref_path):
+    xraw = open(xref_path, encoding="utf-8").read()
+    xref = json.loads(xraw[xraw.find("{"): xraw.rfind("}") + 1])
+    xm = xref["meta"]
+    n_rows = len(xref["rows"])
+    check(xm["tang_states"] == n_states and n_rows == n_states,
+          f"桥行数 == 州数（{n_rows}=={n_states}）")
+    n_m = sum(1 for r in xref["rows"] if r["m"])
+    check(xm["matched"] == n_m and xm["matched"] + xm["unmatched"] == n_rows,
+          f"桥计数自洽（得对应 {xm['matched']} + 无对应 {xm['unmatched']} == {n_rows}）")
+    tphy_write = [ln for ln in open("tools/build_xref_hy.py", encoding="utf-8").read().splitlines()
+                  if 'TPHY' in ln and ('"w"' in ln or "'w'" in ln or '"a"' in ln or "'a'" in ln)]
+    check(not tphy_write, f"build_xref_hy.py 不写 TPHY（违 {tphy_write[:1] if tphy_write else '无'}）")
+
+# ── 15. 论文 PDF 同步哨兵（ANALYSIS.md 改动必须重排 PDF） ──
+print("── 15. 论文 PDF 哨兵")
+pdf_path = "docs/元和经纬-数字人文.pdf"
+md_path = "docs/ANALYSIS.md"
+check(os.path.exists(pdf_path), "docs/元和经纬-数字人文.pdf 存在（python tools/build_paper_pdf.py）")
+if os.path.exists(pdf_path) and os.path.exists(md_path):
+    mt, pt = os.path.getmtime(md_path), os.path.getmtime(pdf_path)
+    if mt > pt + 60:
+        import time
+        check(False, f"ANALYSIS.md（{time.strftime('%m-%d %H:%M', time.localtime(mt))}）"
+                     f"新于 PDF（{time.strftime('%m-%d %H:%M', time.localtime(pt))}）——请重跑 tools/build_paper_pdf.py")
+    else:
+        check(True, "ANALYSIS.md ↔ 论文 PDF 同步")
 
 print()
 if fails:

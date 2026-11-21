@@ -115,6 +115,42 @@ def main():
         for r in dao_rows)
     top_tbl = "\n".join(f"| {t['n']} | {t['dao']} | {t['xian']} |" for t in top_xian)
     zhen_tbl = "\n".join(f"| {k} | {v} |" for k, v in stats["zhen_members"].items())
+
+    # 唐宋对照（互查桥产物 data/xref_hy.js，build_xref_hy.py 生成）
+    xref_path = os.path.join(ROOT, "data", "xref_hy.js")
+    if os.path.exists(xref_path):
+        xraw = open(xref_path, encoding="utf-8").read()
+        xm = json.loads(xraw[xraw.find("{"): xraw.rfind("}") + 1])["meta"]
+        xref_tbl = "\n".join(
+            "| %s | %d | %d | %d | %d | %d |" % (g["dao"], g["same"], g["renamed"], g["unmatched"], g["yili"], g["sj"])
+            for g in json.loads(xraw[xraw.find("{"): xraw.rfind("}") + 1])["byDao"])
+        xref_md = f"""## 五、唐宋对照（寰宇互查桥）
+
+唐 {xm['tang_states']} 州府 ↔ 宋 {xm['song_total']} 条（太平寰宇记，姊妹站寰宇经纬数据，只读）：
+得对应 {xm['matched']}（同名 {xm['same_name']} · 同治异名 {xm['renamed']}）·
+无对应 {xm['unmatched']}（同名异地存疑 {xm['unmatched_doubt']} · 或在寰宇佚卷 {xm['unmatched_vollost']}）；
+同州异隶 {xm['yili']} · 升降（州→府/军/监）{xm['shengjiang']}。
+宋侧另有 {xm['song_new']} 条无唐州对应（军监新置、四夷、唐佚之州），不计唐侧。
+
+| 道 | 同名 | 同治异名 | 无对应 | 异隶 | 升降 |
+|---|---|---|---|---|---|
+{xref_tbl}
+
+（同名=去府/州/军/监尾同名且地理今名相合；同治异名如京兆府↔雍州、汴州↔開封府、恒州↔鎮州；
+同名异地如唐渭州（陇西）≠宋渭州（平凉）——存疑不计，不以似是者充数。）
+
+## 六、古今对照导出
+
+- 州治对照 CSV {stats['states']} 行（道/镇/州府/类/治所今地/纬经/src/置信/卷/管县/坐标注记）
+- 县名录 CSV {stats['xian_listed']} 行（附郭与州同治，余县存名录不定位）
+- KML / GeoJSON 州治点位 {stats['states']} 点（docs/export/，与前端「⤓ 导出」按钮同口径）
+"""
+    else:
+        xref_md = """## 五、唐宋对照（寰宇互查桥）
+
+（桥未建——先运行 python tools/build_xref_hy.py）
+"""
+
     md = f"""# 元和经纬 · 文本计量（ANALYSIS）
 
 > 凡数字必出自脚本（tools/stats.py → data/stats.json；本文件勿手改数字）。
@@ -139,7 +175,7 @@ def main():
 属县最多的十州：
 
 | 州 | 道 | 管县 |
-|---|---|---|
+|---|---|
 {top_tbl}
 
 ## 三、山河故城（县条下地理记述形态计数）
@@ -157,7 +193,8 @@ def main():
 |---|---|
 {zhen_tbl}
 
-## 五、已知之阙
+{xref_md}
+## 七、已知之阙
 
 - 「八到」「贡、赋」传本大段佚（标签存而文亡），站内如实标注——里程网与贡赋品类计量无从做起
 - 剑南卷帙残（黎保柘霸乾诸州佚）；山南西部（峡归夔万忠涪）佚

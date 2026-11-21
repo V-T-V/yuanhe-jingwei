@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/leaflet.css">
 <script>window.__NOTILES__=1;/* 测试密封：不拉外网瓦片 */</script>
 <script src="vendor/leaflet.js"></script>
-<link rel="stylesheet" href="css/main.css?v=1">
+<link rel="stylesheet" href="css/main.css?v=2">
 </head>
 <body class="nopanel">
 <div id="map"></div>
@@ -28,16 +28,17 @@
 <pre id="testlog" style="position:fixed;left:8px;top:8px;z-index:999;background:#fff;border:2px solid #b03a25;padding:8px;font:12px/1.6 monospace;max-width:460px;white-space:pre-wrap"></pre>
 
 <script src="data/site_data.js" defer></script>
-<script src="js/config.js?v=1" defer></script>
-<script src="js/map.js?v=1" defer></script>
-<script src="js/panels.js?v=1" defer></script>
-<script src="js/rail.js?v=1" defer></script>
-<script src="js/search.js?v=1" defer></script>
-<script src="js/reader.js?v=1" defer></script>
-<script src="js/ft_core.js?v=1" defer></script>
-<script src="js/fulltext.js?v=1" defer></script>
-<script src="js/app.js?v=1" defer></script>
-<script src="js/modes.js?v=1" defer></script>
+<script src="data/xref_hy.js" defer></script>
+<script src="js/config.js?v=2" defer></script>
+<script src="js/map.js?v=2" defer></script>
+<script src="js/panels.js?v=2" defer></script>
+<script src="js/rail.js?v=2" defer></script>
+<script src="js/search.js?v=2" defer></script>
+<script src="js/reader.js?v=2" defer></script>
+<script src="js/ft_core.js?v=2" defer></script>
+<script src="js/fulltext.js?v=2" defer></script>
+<script src="js/app.js?v=2" defer></script>
+<script src="js/modes.js?v=2" defer></script>
 <script defer>
 window.addEventListener("load", () => {
   const log = [];
@@ -111,6 +112,32 @@ window.addEventListener("load", () => {
           P("BM saved", BM.load().some(b => b.n === "华州"));
           BM.toggle(dao, hz);
           P("BM removed", !BM.load().some(b => b.n === "华州"));
+          // ⑪ P2 唐宋对照（互查桥）
+          P("XREF data-loaded", typeof YHXREF === "object" && YHXREF.meta.tang_states >= 200);
+          const xrows = YHXREF.rows.filter(r => r.m);
+          P("XREF matched>=150 (" + xrows.length + ")", xrows.length >= 150);
+          P("XREF unmatched-counted", YHXREF.meta.matched + YHXREF.meta.unmatched === YHXREF.meta.tang_states);
+          openXref();
+          let pb = document.getElementById("pbody");
+          P("XREF panel-kicker", pb.textContent.includes("州府对照"));
+          const xgo = pb.querySelector("a.xgo");
+          P("XREF deeplink-../TPHY/", !!xgo && xgo.getAttribute("href").indexOf("../TPHY/#dao=") === 0);
+          P("XREF samples-yuanhe-text", pb.textContent.includes("元和郡县图志"));
+          P("XREF badges-renamed", pb.querySelectorAll(".xb").length >= 3);
+          // ⑫ P2 镇级深链（镇视角：河东节度使领 10 州）
+          openZhenView("河东节度使");
+          pb = document.getElementById("pbody");
+          P("ZHEN panel-seal-镇", document.getElementById("vseal").textContent === "镇");
+          P("ZHEN member-list", pb.querySelectorAll("#pbody .ful li").length >= 2);
+          P("ZHEN hash-write", location.hash.includes("zhen=") && location.hash.includes("dao=hedong"));
+          P("ZHEN rail-expanded", document.querySelectorAll("#raillist .rsub[data-zhou]").length >= 2);
+          // ⑬ P2 导出（同口径计数）
+          const ex = exportRows();
+          P("EXPORT zhou-rows=227 (" + ex.zhou.length + ")", ex.zhou.length === 227);
+          P("EXPORT xian-rows=1081 (" + ex.xian.length + ")", ex.xian.length === 1081);
+          openExport();
+          pb = document.getElementById("pbody");
+          P("EXPORT panel-buttons", pb.querySelectorAll("#pbody .readfull").length === 4);
           done();
         } catch (e) { P("READER-ERR " + e, false); done(); }
       }, 1600);

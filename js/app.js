@@ -110,6 +110,10 @@ if (_nl) _nl.onclick = ()=>{
   panel.classList.toggle("panel-night");
   try{ localStorage.setItem("yhnight", panel.classList.contains("panel-night") ? "1" : "0"); }catch(e){}
 };
+var _xl = document.getElementById("xreflink");
+if (_xl) _xl.onclick = openXref;
+var _el = document.getElementById("exportlink");
+if (_el) _el.onclick = openExport;
 
 /* PWA 离线徽标 */
 (function(){
