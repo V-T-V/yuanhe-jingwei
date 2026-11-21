@@ -76,12 +76,13 @@ window.addEventListener("load", () => {
             P("WORKER sorted", rs.every((r, i) => i === 0 || rs[i-1].n >= r.n));
             const titles = rs.map(r => r.title);
             P("WORKER hit-京兆府", titles.includes("京兆府"));
+            P("WORKER results>=5 (" + rs.length + ")", rs.length >= 5);
             P("WORKER hit-原序", titles.includes("原序"));
             done();
           } catch (e) { P("WORKER-RES-ERR " + e, false); done(); }
         };
         w.onerror = err => { P("WORKER-ERR " + (err.message || err), false); done(); };
-        w.postMessage({q: "长安", docs: docs});
+        w.postMessage({q: "京兆", docs: docs});
       } else {
         done();
       }

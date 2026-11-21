@@ -50,7 +50,6 @@ def main():
         juanshou["原序"] = "\n".join(chapters[1])
     with open(os.path.join(OUT, "juanshou.js"), "w", encoding="utf-8") as f:
         f.write("/* 元和经纬 · 卷首（build_text.py 生成） */\n")
-        f.write("var YHTEXT = window.YHTEXT || {};\n")
         f.write("YHTEXT[\"juanshou\"] = " + json.dumps(juanshou, ensure_ascii=False) + ";\n")
 
     # 分道分州
@@ -101,8 +100,6 @@ def main():
             out[st] = st + "\n" + "\n".join(paras)
             total += len(re.sub(r"\s", "", out[st]))
         with open(os.path.join(OUT, dao + ".js"), "w", encoding="utf-8") as f:
-            f.write("/* 元和经纬 · %s 全文（build_text.py 生成） */\n" % dao)
-            f.write("var YHTEXT = window.YHTEXT || {};\n")
             f.write("YHTEXT[%s] = " % json.dumps(dao) + json.dumps(out, ensure_ascii=False) + ";\n")
     print(f"分片 {len(dao_texts)} 道 · 州县全文 {total} 字 → data/text/")
 

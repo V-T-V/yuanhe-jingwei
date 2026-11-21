@@ -2,7 +2,6 @@
  "states": 227,
  "states_coord": 227,
  "counties_listed": 1081,
- "county_entries": 1101,
  "daos_present": [
   "关内道",
   "河南道",
@@ -11,9 +10,10 @@
   "山南道",
   "江南道",
   "剑南道",
-  "岭南道"
+  "岭南道",
+  "陇右道"
  ],
- "zhens_text": 51,
+ "zhens_text": 50,
  "zhens_lost": 2,
  "per_dao": {
   "关内道": {
@@ -57,14 +57,202 @@
    "lost": 14
   },
   "岭南道": {
-   "states": 32,
+   "states": 31,
    "xian": 107,
    "lost": 0
   },
   "陇右道": {
-   "states": 20,
+   "states": 21,
    "xian": 37,
    "lost": 0
   }
+ },
+ "fetch": {
+  "chapters": 259,
+  "total_chars": 237438,
+  "source": "shidianguji.com/book/SK0967（四库全书本）"
+ },
+ "coords": {
+  "total": 227,
+  "conf1": 171,
+  "conf2": 56
+ },
+ "xian_listed": 1081,
+ "county_entries": 1081,
+ "dao_rows": [
+  {
+   "dao": "关内道",
+   "id": "guannei",
+   "states": 23,
+   "xian": 125,
+   "lost": 0,
+   "chars": 26707,
+   "juan_lo": 1,
+   "juan_hi": 5
+  },
+  {
+   "dao": "河南道",
+   "id": "henan",
+   "states": 29,
+   "xian": 198,
+   "lost": 0,
+   "chars": 54125,
+   "juan_lo": 6,
+   "juan_hi": 13
+  },
+  {
+   "dao": "河东道",
+   "id": "hedong",
+   "states": 18,
+   "xian": 98,
+   "lost": 0,
+   "chars": 28662,
+   "juan_lo": 14,
+   "juan_hi": 19
+  },
+  {
+   "dao": "河北道",
+   "id": "hebei",
+   "states": 20,
+   "xian": 139,
+   "lost": 0,
+   "chars": 25398,
+   "juan_lo": 19,
+   "juan_hi": 22
+  },
+  {
+   "dao": "山南道",
+   "id": "shannan",
+   "states": 15,
+   "xian": 61,
+   "lost": 9,
+   "chars": 14478,
+   "juan_lo": 23,
+   "juan_hi": 25
+  },
+  {
+   "dao": "淮南道",
+   "id": "huainan",
+   "states": 0,
+   "xian": 0,
+   "lost": 6,
+   "chars": 0,
+   "juan_lo": null,
+   "juan_hi": null
+  },
+  {
+   "dao": "江南道",
+   "id": "jiangnan",
+   "states": 35,
+   "xian": 174,
+   "lost": 2,
+   "chars": 31183,
+   "juan_lo": 26,
+   "juan_hi": 30
+  },
+  {
+   "dao": "剑南道",
+   "id": "jiannan",
+   "states": 35,
+   "xian": 142,
+   "lost": 14,
+   "chars": 24570,
+   "juan_lo": 32,
+   "juan_hi": 34
+  },
+  {
+   "dao": "岭南道",
+   "id": "lingnan",
+   "states": 31,
+   "xian": 107,
+   "lost": 0,
+   "chars": 15943,
+   "juan_lo": 35,
+   "juan_hi": 38
+  },
+  {
+   "dao": "陇右道",
+   "id": "longyou",
+   "states": 21,
+   "xian": 37,
+   "lost": 0,
+   "chars": 15653,
+   "juan_lo": 39,
+   "juan_hi": 40
+  }
+ ],
+ "top_xian": [
+  {
+   "n": "河南府",
+   "dao": "河南道",
+   "xian": 26
+  },
+  {
+   "n": "京兆府",
+   "dao": "关内道",
+   "xian": 23
+  },
+  {
+   "n": "广州",
+   "dao": "岭南道",
+   "xian": 13
+  },
+  {
+   "n": "太原府",
+   "dao": "河东道",
+   "xian": 12
+  },
+  {
+   "n": "蔡州",
+   "dao": "河南道",
+   "xian": 11
+  },
+  {
+   "n": "兖州",
+   "dao": "河南道",
+   "xian": 11
+  },
+  {
+   "n": "庆州",
+   "dao": "关内道",
+   "xian": 10
+  },
+  {
+   "n": "延州",
+   "dao": "关内道",
+   "xian": 10
+  },
+  {
+   "n": "宋州",
+   "dao": "河南道",
+   "xian": 10
+  },
+  {
+   "n": "潞州",
+   "dao": "河东道",
+   "xian": 10
+  }
+ ],
+ "features": {
+  "山": 555,
+  "水": 201,
+  "故城": 177,
+  "陵墓": 100
+ },
+ "zhens": 50,
+ "state_text_chars": 236719,
+ "zhen_members": {
+  "陇右诸州（陷蕃）": 21,
+  "西川节度使": 14,
+  "桂管经略使": 11,
+  "河东节度使": 10,
+  "松州都督府": 10,
+  "浙东观察使": 8,
+  "邕管经略使": 8,
+  "山南东道节度使": 7,
+  "山南西道节度使": 7,
+  "湖南观察使": 7,
+  "东川节度使": 7,
+  "平卢军节度使": 6
  }
 }

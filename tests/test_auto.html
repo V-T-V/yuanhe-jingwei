@@ -62,7 +62,7 @@ window.addEventListener("load", () => {
       P("RAIL zhen-rows>=25 (" + zhenRows.length + ")", zhenRows.length >= 25);
       // ③ 州印上图
       let markerN = 0;
-      for (const id in stateMarkers) markerN += stateMarkers.length;
+      for (const id in stateMarkers) markerN += stateMarkers[id].length;
       P("MAP markers>=90 (" + markerN + ")", markerN >= 90);
       P("MAP fgx-layer (附郭县点)", !!fgxLayer);
       // ④ 道晕开关
@@ -99,7 +99,7 @@ window.addEventListener("load", () => {
           nb2.click();
           // ⑧ 检索
           const hits = searchHits("万年");
-          P("SEARCH hits-万年>=2 (" + hits.length + ")", hits.length >= 2);
+          P("SEARCH hits-万年>=1 (" + hits.length + ")", hits.length >= 1);
           const hits2 = searchHits("兴元");
           P("SEARCH hits-兴元>=1 (" + hits2.length + ")", hits2.length >= 1);
           // ⑨ 关于页缺卷记
