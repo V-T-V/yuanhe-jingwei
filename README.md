@@ -141,3 +141,5 @@ python run_tests.py        # lint + 18 数据断言 + 2 无头断言页（需本
   个别匹配注有「寰宇条坐标疑误」（均州 222 km）、「宋治迁移」（原州 93 km）；
   信州/昌州两侧地理今名俱合而寰宇站道标出入（标河北道），已注「异隶」如实并陈
 - 抓取源为在线服务，重抓请 `python tools/fetch_text.py`（断点续抓）
+
+学术引用：[CITATION.cff](CITATION.cff)（CFF 1.2.0 · dataset）——构建产物指纹账本另见 [SHA256SUMS](SHA256SUMS)，`python tools/build_sums.py` 重算、`run_tests.py` 对账。

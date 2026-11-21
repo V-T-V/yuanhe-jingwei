@@ -99,6 +99,40 @@ A("A17 导出三格式同口径（CSV 带 BOM）",
 A("A18 论文 PDF 在位", os.path.exists("docs/元和经纬-数字人文.pdf")
   and os.path.getsize("docs/元和经纬-数字人文.pdf") > 50000, "元和经纬-数字人文.pdf")
 
+# ── 2b. 账目对账（SHA256SUMS 指纹账本；行尾无关口径，过期即红）──
+print("── 账目对账（SHA256SUMS）")
+import importlib.util as _ilu
+_spec = _ilu.spec_from_file_location("build_sums", "tools/build_sums.py")
+_bs = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_bs)
+_want = _bs.collect()
+_has_sums = os.path.exists("SHA256SUMS")
+A("A19 账本在库且纯 LF", _has_sums
+  and open("SHA256SUMS", "rb").read().count(b"\r") == 0,
+  f"{len(open('SHA256SUMS', encoding='utf-8').read().splitlines()) if _has_sums else 0} 行"
+  if _has_sums else "缺失——先 python tools/build_sums.py")
+_lines = open("SHA256SUMS", encoding="utf-8").read().splitlines() if _has_sums else []
+_problems, _seen = [], set()
+for _i, _line in enumerate(_lines, 1):
+    _parts = _line.split("  ", 1)
+    _rel = _parts[1].strip().replace("\\", "/") if len(_parts) == 2 else ""
+    if len(_parts) != 2 or not re.fullmatch(r"[0-9a-f]{64}", _parts[0]) or not _rel:
+        _problems.append(f"第{_i}行格式非法"); continue
+    if _rel in _seen:
+        _problems.append(f"第{_i}行重复 {_rel}"); continue
+    _seen.add(_rel)
+    if not os.path.isfile(_rel):
+        _problems.append(f"账上文件缺失 {_rel}"); continue
+    if _bs.sha256(_rel) != _parts[0]:
+        _problems.append(f"指纹不符 {_rel}")
+A("A20 逐行指纹与磁盘实测一致", not _problems,
+  f"失真 {len(_problems)}：{_problems[:2]}——重跑 python tools/build_sums.py" if _problems
+  else f"{len(_lines)} 行全符")
+A("A21 行数与生成器一致且产物无缺账",
+  len(_lines) == len(_want) and not [r for r in _want if r not in _seen],
+  f"账 {len(_lines)} 行 / 生成器 {len(_want)} 行"
+  + ("" if len(_lines) == len(_want) else "——重跑 python tools/build_sums.py"))
+
 # ── 3. 本地服务健康检查 ──
 try:
     urllib.request.urlopen(BASE + "index.html", timeout=3).read()
