@@ -100,6 +100,11 @@ var _wl = document.getElementById("wanderlink");
 if (_wl) _wl.onclick = wander;
 var _bl = document.getElementById("bmlink");
 if (_bl) _bl.onclick = openBookmarks;
+var _td = document.getElementById("tdlink");
+if (_td) _td.onclick = function(){
+  location.href = "3d.html" + (__curState
+    ? "#dao=" + __curState.dao + "&zhou=" + encodeURIComponent(__curState.n) : "");
+};
 var _nl = document.getElementById("nightlink");
 if (_nl) _nl.onclick = ()=>{
   panel.classList.toggle("panel-night");

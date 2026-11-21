@@ -8,16 +8,17 @@ const TEXTS = "yh-" + VERSION + "-texts";
 const TILES = "yh-" + VERSION + "-tiles";
 const TILE_CAP = 1200;
 const SHELL_FILES = [
-  "./", "./index.html", "./manifest.json",
+  "./", "./index.html", "./3d.html", "./manifest.json",
   "./css/main.css?v=1",
   "./vendor/leaflet.js", "./vendor/leaflet.css",
+  "./vendor/maplibre-gl.js", "./vendor/maplibre-gl.css",
   "./data/site_data.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png",
   "./js/config.js?v=1", "./js/map.js?v=1", "./js/panels.js?v=1",
   "./js/rail.js?v=1", "./js/search.js?v=1", "./js/reader.js?v=1",
   "./js/ft_core.js?v=1", "./js/fulltext.js?v=1",
   "./js/app.js?v=1", "./js/modes.js?v=1",
-  "./js/ftworker.js",
+  "./js/ftworker.js", "./js/map3d.js?v=1",
 ];
 
 self.addEventListener("install", e => {
