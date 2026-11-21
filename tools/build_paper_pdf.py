@@ -6,6 +6,7 @@
 import io
 import json
 import os
+import subprocess
 import sys
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -17,12 +18,19 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import (BaseDocTemplate, Frame, HRFlowable, KeepTogether,
+from reportlab.platypus import (BaseDocTemplate, Frame, HRFlowable, Image, KeepTogether,
                                 PageTemplate, Paragraph, Spacer, Table, TableStyle)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs", "元和经纬-数字人文.pdf")
 MD = os.path.join(ROOT, "docs", "ANALYSIS.md")
+
+# 插图缺失时自动重建（管线可重入：data/stats.json → build_paper_figs.py，学 HHH）
+FIGS_DIR = os.path.join(ROOT, "docs", "figs")
+NEED_FIGS = ["fig1_dao.png", "fig2_lost.png", "fig3_zhen.png"]
+if not all(os.path.isfile(os.path.join(FIGS_DIR, f)) for f in NEED_FIGS):
+    subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "build_paper_figs.py")],
+                   check=True)
 
 pdfmetrics.registerFont(TTFont("KaiTi", r"C:\Windows\Fonts\STKAITI.TTF"))
 pdfmetrics.registerFont(TTFont("YaHei", r"C:\Windows\Fonts\msyh.ttc", subfontIndex=0))
@@ -97,16 +105,36 @@ def footer(cv, doc):
     cv.restoreState()
 
 
+def fig(fname, h_mm, caption):
+    img = Image(os.path.join(FIGS_DIR, fname), width=AW, height=h_mm * mm, hAlign="CENTER")
+    return KeepTogether([Spacer(1, 2 * mm), img, Paragraph(esc(caption), S["cap"])])
+
+
+# 节 → 插图（fname, h_mm, 图注）。挂在各节首表之后——图文对应，数字均出自 data/stats.json
+FIGS_AFTER = {
+    "一、道级覆盖": [
+        ("fig1_dao.png", 103.9, "图 1　十道州府数与县名录数——淮南整道佚（data/stats.json: per_dao）"),
+        ("fig2_lost.png", 85.0, "图 2　卷佚 31 州份的道级分布——剑南残帙 14 · 淮南全佚 6（data/stats.json: per_dao[].lost）"),
+    ],
+    "四、镇属规模 TOP12": [
+        ("fig3_zhen.png", 113.3, "图 3　镇属规模 TOP12——陇右诸州（陷蕃残帙）21 州独大（data/stats.json: zhen_members）"),
+    ],
+}
+
+
 def parse_md(md):
-    """ANALYSIS.md（stats.py 产物）→ flowables：## 节 → h1；表格 → tbl；- 条 → body0；> 引 → cap"""
+    """ANALYSIS.md（stats.py 产物）→ flowables：## 节 → h1；表格 → tbl；- 条 → body0；> 引 → cap
+    节内首表后按 FIGS_AFTER 挂插图（图注自 data/stats.json 键名，凡数字出自脚本）。"""
     out, lines, i = [], md.splitlines(), 0
     tbl_no = 0
+    section, figs_done = "", set()
     while i < len(lines):
         ln = lines[i].rstrip()
         if not ln.strip():
             i += 1
             continue
         if ln.startswith("## "):
+            section = ln[3:].strip()
             out.append(P(ln[3:], "h1"))
             i += 1
             continue
@@ -128,6 +156,10 @@ def parse_md(md):
                 tbl_no += 1
                 out.append(tbl(block[0], block[1:]))
                 out.append(Spacer(1, 2 * mm))
+                if section in FIGS_AFTER and section not in figs_done:
+                    for fname, h_mm, cap in FIGS_AFTER[section]:
+                        out.append(fig(fname, h_mm, cap))
+                    figs_done.add(section)
             continue
         if ln.lstrip().startswith("- "):
             out.append(P("· " + ln.lstrip()[2:], "body0"))
