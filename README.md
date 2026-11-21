@@ -53,7 +53,12 @@ python -m http.server 9600
   夜读 ☾ · TTS 朗读 🔊 · 字号 A−/A+ · 存 .txt · Ctrl+P 存 PDF
 - **书签/漫游**：州详情 ☆ 收藏（localStorage）；⚑ 漫游随机入州
 - **三维形胜**（[3d.html](3d.html) / 底栏 ⛰）：MapLibre 真地形（1.35× 夸张）上观十道州治，
-  圆径随属县数、色随道，点州出卡回 2D 详卷；开场自西域掠至关中
+  圆径随属县数、色随道，点州出卡回 2D 详卷；开场自西域掠至关中。
+  **沿革文柱**：条目文量 ≥1,200 字的 **57 州**立六棱文柱（青绿系随高渐深），
+  柱高随文量 log 映射 0.4–5.0 km（示意尺度，非实测——页内有据声明）；不满阈值者**不立柱**
+  ——卷帙残佚之实，不以矮柱充数。点柱开卡（文量·柱高依据·沿革节引）并「⟩ 入 2D 州卡」；
+  文量字段 `yt` 出自 build_data（正文+县条+名录+所存「八到/贡、赋」佚标签如实计，
+  佚失内容无字可计）；无 WebGL 沙箱经 window.YH3D 钩直验数据与交互
 - **唐宋对照**（底栏「唐宋」）：唐 227 州府 ↔ 宋《太平寰宇记》360 条对照
   （同名 192 · 同治异名 6 · 无对应 29 如实分记；异隶 8 · 升降 4 各为实录）——
   按道分组计数 + 元和原文句 × 寰宇条目样例 + ↗寰宇 深链（`../TPHY/#dao=…&zhou=…`，
@@ -93,7 +98,7 @@ python -m http.server 9600
 | `tools/export_data.py` | 古今对照导出：CSV（BOM）/KML/GeoJSON → docs/export/ |
 | `tools/build_paper_pdf.py` | 论文排印：ANALYSIS.md → docs/元和经纬-数字人文.pdf |
 | `tools/lint.py` | 确定性检查（禁止清单 + 互查桥自洽 + 论文 PDF 哨兵，15 类） |
-| `tests/` + `run_tests.py` | 断言页 + 一键回归（lint + 18 数据断言 + 2 无头页） |
+| `tests/` + `run_tests.py` | 断言页 + 一键回归（lint + 22 数据断言 + 3 无头页，含 3D 文柱沙箱页） |
 
 脚本为经典 `<script defer>` 链（非 ES Module），file:// 直开与 http 服务均可运行。
 
@@ -123,7 +128,7 @@ lint 哨兵会拦）。
 
 ```
 python tools/lint.py       # 禁止清单 + 互查桥自洽 + 论文 PDF 哨兵（15 类）
-python run_tests.py        # lint + 18 数据断言 + 2 无头断言页（需本地服务 9600）
+python run_tests.py        # lint + 22 数据断言 + 3 无头断言页（需本地服务 9600）
 # 管线重入顺序：build_data → build_xref_hy → stats → build_paper_pdf → export_data
 ```
 

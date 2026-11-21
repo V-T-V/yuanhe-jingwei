@@ -232,6 +232,9 @@ def main():
         s["src"] = "derived" if co else None
         yan = next((t for k, t in s["paras"] if k == "p" and len(t) > 80), "")
         s["yan"] = yan[:180]
+        # 条目文量 yt：正文+县条+名录+所存标签（「八到：」「贡、赋：」标签俱存而文佚者
+        # 如实计其存文——佚失内容无字可计，柱高不虚构）
+        s["yt"] = sum(len(t) for _, t in s["paras"])
         # 八到/贡赋：传本多佚——标签存在而内容空者记 true
         labels = [t for k, t in s["paras"] if k == "label"]
         s["badao"] = "八到：" in labels
@@ -280,6 +283,7 @@ def main():
                 {"n": s["n"], "c": s["c"], "now": s["now"], "conf": s["conf"],
                  "src": s["src"], "xian": s["counties"], "fg": s["fg"],
                  "zhen": s["zhen"], "juan": s["juan"], "yan": s["yan"],
+                 "yt": s["yt"],
                  "badao": s["badao"], "gongfu": s["gongfu"], "ch": s["ch"][0]}
                 for s in ss],
             "lost": lost_by_dao.get(dname, []),

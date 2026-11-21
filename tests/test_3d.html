@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<base href="../">
+<meta charset="UTF-8">
+<title>三维文柱验证 · 元和经纬</title>
+<link rel="stylesheet" href="css/main.css?v=4">
+</head>
+<body>
+<div id="map3d"></div>
+<div id="pillarcard"></div>
+<div id="views3d"></div>
+<pre id="testlog" style="position:fixed;left:8px;top:8px;z-index:999;background:#fff;border:2px solid #b03a25;padding:8px;font:12px/1.6 monospace;max-width:460px;white-space:pre-wrap"></pre>
+
+<!-- 刻意不载 vendor/maplibre-gl.js：走「组件未载入」分支——
+     window.YH3D 沙箱钩直验文柱数据与柱卡交互（无 WebGL 不假绿） -->
+<script src="data/site_data.js" defer></script>
+<script src="js/map3d.js?v=4" defer></script>
+<script defer>
+window.addEventListener("load", () => {
+  const log = [];
+  const P = (n, ok) => log.push(n + " " + (ok ? "PASS" : "FAIL"));
+  const done = () => {
+    document.getElementById("testlog").textContent =
+      "TESTLOG\n" + log.join("\n") + "\nENDLOG";
+    document.title = log.some(l => l.includes("FAIL")) ? "HAS-FAIL" : "ALL-PASS";
+  };
+  setTimeout(() => {
+    try {
+      // ① 沙箱钩在位（无 WebGL 路径）
+      P("SANDBOX YH3D-hook", typeof YH3D === "object" && YH3D !== null);
+      P("SANDBOX mapOk=false（无假绿）", YH3D.mapOk === false);
+      P("SANDBOX map3d-fallback-text",
+        document.getElementById("map3d").textContent.indexOf("未载入") >= 0);
+      P("YT YT_MIN=1200", YH3D.YT_MIN === 1200);
+      // ② 文柱数据（自 site_data 直算互证）
+      const expect = YH.daos.reduce((s, d) =>
+        s + d.states.filter(u => u.c && (u.yt || 0) >= 1200).length, 0);
+      const g = YH3D.pillarGeo();
+      P("DATA pillar-count=" + g.features.length + "（应 " + expect + "）",
+        g.features.length === expect && expect >= 50);
+      P("DATA all-yt>=threshold",
+        g.features.every(f => f.properties.yt >= 1200));
+      P("DATA heights-in-400-5000",
+        g.features.every(f => f.properties.h >= 400 && f.properties.h <= 5000));
+      P("DATA hexagon-ring-7pts",
+        g.features.every(f => {
+          const r = f.geometry.coordinates[0][0];
+          return r.length === 7 && r[0][0] === r[6][0] && r[0][1] === r[6][1];
+        }));
+      const cd = g.features.find(f => f.properties.n === "成都府");
+      P("DATA 成都府-max-pillar(10162字,h=5000)",
+        !!cd && cd.properties.yt === 10162 && cd.properties.h === 5000);
+      const small = YH.daos.some(d => d.states.some(u => u.yt && u.yt < 1200 && u.c));
+      P("DATA below-threshold-excluded",
+        small && !g.features.some(f => f.properties.yt < 1200));
+      // ③ 柱卡交互（DOM 直验）
+      const ok = YH3D.openPillar(g.features[0].properties);
+      const card = document.getElementById("pillarcard");
+      P("CARD open-pillar", ok && card.style.display === "block");
+      P("CARD name+yitext", card.textContent.includes(g.features[0].properties.n)
+        && card.textContent.includes("条目文量"));
+      P("CARD log-declaration", card.textContent.includes("log 示意尺度"));
+      const go = card.querySelector("a.go2d");
+      P("CARD ⟩-go2d-deeplink",
+        !!go && go.getAttribute("href").indexOf("index.html#dao=") === 0
+        && go.getAttribute("href").indexOf("zhou=" + encodeURIComponent(g.features[0].properties.n)) > 0);
+      // ④ 文柱开关（无地图环境仅翻旗，不炸）
+      const btn = document.getElementById("pillbtn");
+      P("TOGGLE button-exists", !!btn && btn.textContent.indexOf("文柱") >= 0);
+      YH3D.setPillarOn(false);
+      P("TOGGLE off", YH3D.isPillarOn() === false && btn.textContent.indexOf("✓") < 0);
+      YH3D.setPillarOn(true);
+      P("TOGGLE on", YH3D.isPillarOn() === true && btn.textContent.indexOf("✓") >= 0);
+      P("TOGGLE pillarCount-live", YH3D.pillarCount() === expect);
+      done();
+    } catch (e) { P("3D-ERR " + e, false); done(); }
+  }, 1200);
+});
+</script>
+</body>
+</html>

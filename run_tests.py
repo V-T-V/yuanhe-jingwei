@@ -138,6 +138,17 @@ A("A21 行数与生成器一致且产物无缺账",
   f"账 {len(_lines)} 行 / 生成器 {len(_want)} 行"
   + ("" if len(_lines) == len(_want) else "——重跑 python tools/build_sums.py"))
 
+# ── 2c. 3D 沿革文柱（yt 字段 + 阈值，map3d.js 常量与数据互证）──
+m3 = open("js/map3d.js", encoding="utf-8").read()
+mm = re.search(r"YT_MIN = (\d+)", m3)
+yt_min = int(mm.group(1)) if mm else -1
+yts = [s.get("yt") or 0 for d in sd["daos"] for s in d["states"]]
+n_pillar = sum(1 for v in yts if v >= yt_min)
+A("A22 沿革文柱自洽（yt 阈值与 map3d 同源）",
+  yt_min == 1200 and all(isinstance(v, int) and v >= 0 for v in yts)
+  and 45 <= n_pillar <= 70 and max(yts) == 10162,
+  f"入柱 {n_pillar} 州 · 中位 {sorted(yts)[len(yts) // 2]} 字 · 最大 {max(yts)}（成都府）")
+
 # ── 3. 本地服务健康检查 ──
 try:
     urllib.request.urlopen(BASE + "index.html", timeout=3).read()
@@ -157,7 +168,7 @@ if not EDGE:
     print("✗ 未找到浏览器（可用环境变量 YH_BROWSER 指定）")
     sys.exit(1)
 
-PAGES = ["tests/test_auto.html", "tests/test_ft.html"]
+PAGES = ["tests/test_auto.html", "tests/test_ft.html", "tests/test_3d.html"]
 # 「无日志」= 页面在虚时预算内没跑完（Worker 冷启动竞态，ubuntu Chrome 上偶发）——
 # 有界重试+加预算；一旦产出 TESTLOG 且含 FAIL 仍即红，重试只治「没跑」，不吞断言失败
 BUDGETS = [18000, 30000, 45000]

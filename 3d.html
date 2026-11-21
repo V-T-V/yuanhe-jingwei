@@ -6,7 +6,7 @@
 <title>三维形胜 · 元和经纬</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%232f5d70'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23f6efdc' font-family='KaiTi,serif'%3E元%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/maplibre-gl.css">
-<link rel="stylesheet" href="css/main.css?v=3">
+<link rel="stylesheet" href="css/main.css?v=4">
 <style>
   html,body{overflow:hidden}
   #map3d{position:fixed;inset:0;z-index:0;background:#e8dcb9}
@@ -27,6 +27,21 @@
     background:radial-gradient(ellipse at 50% 30%,#f4ecd6,#dfd0a6);transition:opacity .9s;pointer-events:none}
   #boot3d.gone{opacity:0}
   #boot3d div{font-family:KaiTi,serif;font-size:26px;letter-spacing:14px;color:var(--ink-mid)}
+  #pillarcard{position:fixed;right:16px;top:16px;z-index:30;width:264px;display:none;
+    background:linear-gradient(160deg,rgba(246,240,221,.96),rgba(240,231,208,.96));
+    border:1px solid var(--line);padding:13px 15px;box-shadow:0 8px 22px -10px rgba(60,45,20,.45)}
+  #pillarcard h3{font-family:KaiTi,serif;font-size:19px;letter-spacing:3px;color:var(--azur-d);margin:0}
+  #pillarcard .m{font:11px FangSong,serif;color:var(--ink-mid);margin-top:3px;letter-spacing:1px}
+  #pillarcard .x{font:12px FangSong,serif;color:var(--ink-mid);line-height:1.9;margin-top:7px;
+    max-height:170px;overflow:auto}
+  #pillarcard .go2d{display:inline-block;margin-top:9px;font:12px KaiTi,serif;letter-spacing:2px;
+    color:var(--cinnabar);text-decoration:none;border:1px solid rgba(176,58,37,.45);
+    padding:3px 10px;background:rgba(246,240,221,.9)}
+  #pillarcard .go2d:hover{background:var(--cinnabar);color:#f6efdc}
+  #views3d{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:8px}
+  #views3d button{font:13px KaiTi,serif;letter-spacing:2px;color:var(--ink);cursor:pointer;
+    background:rgba(246,240,221,.92);border:1px solid var(--line);padding:6px 14px}
+  #views3d button:hover{border-color:var(--azur);color:var(--azur-d)}
 </style>
 </head>
 <body>
@@ -34,17 +49,23 @@
 <div id="hud">
   <h1>元和 · 三维形胜</h1>
   <p>十道州治立于真山川 · 圆径随属县数</p>
+  <p><b>沿革文柱</b>立文量大州（条目文量 ≥1200 字者 57 州）：<br>
+    柱高随文量 log 示意（0.4–5.0 km，非实测）；<br>
+    不满阈值者不立柱——卷帙残佚之实，不以矮柱充数。<br>
+    点柱开卡（文量·柱高依据·沿革节引），⟩ 入 2D 州卡。</p>
   <button id="back2d">⟨ 回二维舆图</button>
 </div>
 <div id="legend">
   <div><b style="font-family:KaiTi,serif;font-size:12.5px;letter-spacing:3px;color:var(--azur-d)">十道</b></div>
   <div id="legend-rows"></div>
 </div>
+<div id="pillarcard"></div>
+<div id="views3d"></div>
 <div id="boot3d"><div>山河 凝 视</div></div>
 
 <script src="data/site_data.js" defer></script>
 <script src="vendor/maplibre-gl.js" defer></script>
-<script src="js/map3d.js?v=3" defer></script>
+<script src="js/map3d.js?v=4" defer></script>
 <script defer>
 document.addEventListener("DOMContentLoaded", ()=>{
   const rows = document.getElementById("legend-rows");

@@ -2,24 +2,24 @@
    三级缓存：SHELL 外壳预存 · TEXTS 全文懒存 · TILES 瓦片限额存
    VERSION 与 index.html 的 ?v 同步。 */
 
-const VERSION = "v3";
+const VERSION = "v4";
 const SHELL = "yh-" + VERSION + "-shell";
 const TEXTS = "yh-" + VERSION + "-texts";
 const TILES = "yh-" + VERSION + "-tiles";
 const TILE_CAP = 1200;
 const SHELL_FILES = [
   "./", "./index.html", "./3d.html", "./manifest.json",
-  "./css/main.css?v=3",
+  "./css/main.css?v=4",
   "./vendor/leaflet.js", "./vendor/leaflet.css",
   "./vendor/maplibre-gl.js", "./vendor/maplibre-gl.css",
   "./data/site_data.js",
   "./data/xref_hy.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png",
-  "./js/config.js?v=3", "./js/map.js?v=3", "./js/panels.js?v=3",
-  "./js/rail.js?v=3", "./js/search.js?v=3", "./js/reader.js?v=3",
-  "./js/ft_core.js?v=3", "./js/fulltext.js?v=3",
-  "./js/app.js?v=3", "./js/modes.js?v=3",
-  "./js/ftworker.js", "./js/map3d.js?v=3",
+  "./js/config.js?v=4", "./js/map.js?v=4", "./js/panels.js?v=4",
+  "./js/rail.js?v=4", "./js/search.js?v=4", "./js/reader.js?v=4",
+  "./js/ft_core.js?v=4", "./js/fulltext.js?v=4",
+  "./js/app.js?v=4", "./js/modes.js?v=4",
+  "./js/ftworker.js", "./js/map3d.js?v=4",
 ];
 
 self.addEventListener("install", e => {
