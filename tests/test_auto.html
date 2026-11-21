@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<base href="../">
+<meta charset="UTF-8">
+<title>自动验证 · 元和经纬</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<script>window.__NOTILES__=1;/* 测试密封：不拉外网瓦片 */</script>
+<script src="vendor/leaflet.js"></script>
+<link rel="stylesheet" href="css/main.css?v=1">
+</head>
+<body class="nopanel">
+<div id="map"></div>
+<div class="paper-wash"></div><div class="grain"></div>
+<header>
+  <div class="brand"><div class="seal">元和</div>
+  <div><h1>元和经纬</h1><p>自动验证页</p></div></div>
+  <div id="searchwrap"><input id="search"><div id="sresults"></div></div>
+</header>
+<aside id="rail"><div class="rt" id="railtitle"></div><div id="raillist"></div></aside>
+<section id="panel"><button id="pclose">✕</button>
+  <div class="vtitle"><div class="vname" id="vname"></div><div class="vseal" id="vseal">元和</div></div>
+  <div id="pbody"></div></section>
+<footer><span id="bookstat"></span>
+  <div class="right"><span class="link" id="aboutlink">关于 · 缺卷记</span></div></footer>
+<div class="north"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#f6efdc"/></svg></div>
+<div id="boot"><div class="bseal">元和</div><h2>元和经纬</h2><div class="go">展 卷</div></div>
+<pre id="testlog" style="position:fixed;left:8px;top:8px;z-index:999;background:#fff;border:2px solid #b03a25;padding:8px;font:12px/1.6 monospace;max-width:460px;white-space:pre-wrap"></pre>
+
+<script src="data/site_data.js" defer></script>
+<script src="js/config.js?v=1" defer></script>
+<script src="js/map.js?v=1" defer></script>
+<script src="js/panels.js?v=1" defer></script>
+<script src="js/rail.js?v=1" defer></script>
+<script src="js/search.js?v=1" defer></script>
+<script src="js/reader.js?v=1" defer></script>
+<script src="js/ft_core.js?v=1" defer></script>
+<script src="js/fulltext.js?v=1" defer></script>
+<script src="js/app.js?v=1" defer></script>
+<script src="js/modes.js?v=1" defer></script>
+<script defer>
+window.addEventListener("load", () => {
+  const log = [];
+  const P = (n, ok) => log.push(n + " " + (ok ? "PASS" : "FAIL"));
+  const done = () => {
+    document.getElementById("testlog").textContent =
+      "TESTLOG\n" + log.join("\n") + "\nENDLOG";
+    document.title = log.some(l => l.includes("FAIL")) ? "HAS-FAIL" : "ALL-PASS";
+  };
+  dismissBoot();
+  setTimeout(() => {
+    try {
+      // ① 数据与统计
+      P("DATA daos=10", YH.daos.length === 10);
+      const nStates = YH.daos.reduce((s, d) => s + d.states.length, 0);
+      P("DATA states>=90 (" + nStates + ")", nStates >= 90);
+      P("DATA ST.bookstat", document.getElementById("bookstat").textContent.includes("州"));
+      // ② 纲目分镇
+      const daoRows = document.querySelectorAll("#raillist .ri-dao");
+      P("RAIL dao-rows=10", daoRows.length === 10);
+      const zhenRows = document.querySelectorAll("#raillist .rzh");
+      P("RAIL zhen-rows>=25 (" + zhenRows.length + ")", zhenRows.length >= 25);
+      // ③ 州印上图
+      let markerN = 0;
+      for (const id in stateMarkers) markerN += stateMarkers.length;
+      P("MAP markers>=90 (" + markerN + ")", markerN >= 90);
+      P("MAP fgx-layer (附郭县点)", !!fgxLayer);
+      // ④ 道晕开关
+      hullsOn = true; drawHulls();
+      const hullN = Object.keys(hullLayer._layers || {}).length;
+      P("MAP hulls-on>=6 (" + hullN + ")", hullN >= 6);
+      hullsOn = false; drawHulls();
+      // ⑤ 州详情（华州）
+      const dao = YH.daos.find(d => d.id === "guannei");
+      const hz = dao.states.find(s => s.n === "华州");
+      openState(dao, hz);
+      P("PANEL open-state", document.getElementById("panel").classList.contains("open"));
+      P("PANEL vname=华", document.getElementById("vname").textContent.includes("华"));
+      const chips = document.querySelectorAll("#pbody .chip");
+      P("PANEL xian-chips>=3 (" + chips.length + ")", chips.length >= 3);
+      P("PANEL lostnote 八到/贡赋佚注", document.getElementById("pbody").textContent.includes("佚"));
+      P("PANEL hash-write", location.hash.includes("dao=guannei"));
+      // ⑥ 缺卷州份上图（淮南整道佚 → lost 圈）
+      const hn = YH.daos.find(d => d.id === "huainan");
+      P("DATA huainan-lost>=5 (" + hn.lost.length + ")", hn.lost.length >= 5);
+      // ⑦ 阅读器：华州原文懒加载
+      openStateText(dao, hz);
+      setTimeout(() => {
+        try {
+          const tps = document.querySelectorAll("#pbody .tp");
+          P("READER paras>=5 (" + tps.length + ")", tps.length >= 5);
+          const hd = document.querySelector("#pbody .tp .hd");
+          P("READER heading-para", !!hd);
+          P("READER tmeta-字数", document.getElementById("pbody").textContent.includes("字"));
+          // 夜读
+          const nb2 = document.getElementById("tnight");
+          nb2.click();
+          P("READER night-on", document.getElementById("panel").classList.contains("panel-night"));
+          nb2.click();
+          // ⑧ 检索
+          const hits = searchHits("万年");
+          P("SEARCH hits-万年>=2 (" + hits.length + ")", hits.length >= 2);
+          const hits2 = searchHits("兴元");
+          P("SEARCH hits-兴元>=1 (" + hits2.length + ")", hits2.length >= 1);
+          // ⑨ 关于页缺卷记
+          openAbout();
+          P("ABOUT missing-note", document.getElementById("pbody").textContent.includes("十九"));
+          P("ABOUT 淮南整道佚", document.getElementById("pbody").textContent.includes("淮南"));
+          // ⑩ 书签
+          BM.toggle(dao, hz);
+          P("BM saved", BM.load().some(b => b.n === "华州"));
+          BM.toggle(dao, hz);
+          P("BM removed", !BM.load().some(b => b.n === "华州"));
+          done();
+        } catch (e) { P("READER-ERR " + e, false); done(); }
+      }, 1600);
+    } catch (e) { P("AUTO-ERR " + e, false); done(); }
+  }, 2500);
+});
+</script>
+</body>
+</html>

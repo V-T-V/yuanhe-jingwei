@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<base href="../">
+<meta charset="UTF-8">
+<title>全文检索验证 · 元和经纬</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<script>window.__NOTILES__=1;/* 测试密封：不拉外网瓦片 */</script>
+<script src="vendor/leaflet.js"></script>
+<link rel="stylesheet" href="css/main.css?v=1">
+</head>
+<body class="nopanel">
+<div id="map"></div>
+<div class="paper-wash"></div><div class="grain"></div>
+<header>
+  <div class="brand"><div class="seal">元和</div>
+  <div><h1>元和经纬</h1><p>全文检索验证</p></div></div>
+  <div id="searchwrap"><input id="search"><div id="sresults"></div></div>
+</header>
+<aside id="rail"><div class="rt" id="railtitle"></div><div id="raillist"></div></aside>
+<section id="panel"><button id="pclose">✕</button>
+  <div class="vtitle"><div class="vname" id="vname"></div><div class="vseal" id="vseal">元和</div></div>
+  <div id="pbody"></div></section>
+<footer><span id="bookstat"></span></footer>
+<div class="north"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#f6efdc"/></svg></div>
+<div id="boot"><div class="bseal">元和</div><h2>元和经纬</h2><div class="go">展 卷</div></div>
+<pre id="testlog" style="position:fixed;left:8px;top:8px;z-index:999;background:#fff;border:2px solid #b03a25;padding:8px;font:12px/1.6 monospace;max-width:460px;white-space:pre-wrap"></pre>
+
+<script src="data/site_data.js" defer></script>
+<script src="js/config.js?v=1" defer></script>
+<script src="js/map.js?v=1" defer></script>
+<script src="js/panels.js?v=1" defer></script>
+<script src="js/rail.js?v=1" defer></script>
+<script src="js/search.js?v=1" defer></script>
+<script src="js/reader.js?v=1" defer></script>
+<script src="js/ft_core.js?v=1" defer></script>
+<script src="js/fulltext.js?v=1" defer></script>
+<script src="js/app.js?v=1" defer></script>
+<script src="js/modes.js?v=1" defer></script>
+<script defer>
+window.addEventListener("load", () => {
+  const log = [];
+  const P = (n, ok) => log.push(n + " " + (ok ? "PASS" : "FAIL"));
+  const done = () => {
+    document.getElementById("testlog").textContent =
+      "TESTLOG\n" + log.join("\n") + "\nENDLOG";
+    document.title = log.some(l => l.includes("FAIL")) ? "HAS-FAIL" : "ALL-PASS";
+  };
+  dismissBoot();
+  // 全书分片加载 → docs → 纯核计数 → Worker 扫描
+  ftProgress(() => {
+    try {
+      const docs = ftCollectDocs();
+      P("FT docs>=90 (" + docs.length + ")", docs.length >= 90);
+      const chars = docs.reduce((s, d) => s + d.text.length, 0);
+      P("FT total-chars>=150000 (" + chars + ")", chars >= 150000);
+      // 卷首在 docs
+      P("FT juanshou", docs.some(d => d.key === "juanshou" && d.title === "原序"));
+      // 纯核：京兆府条含「渭水」或「长安」
+      const jing = docs.find(d => d.title === "京兆府");
+      P("FT jingzhao-doc", !!jing);
+      if (jing){
+        const n1 = countHits(jing.text, "长安");
+        P("FT count-长安>0 (" + n1 + ")", n1 > 0);
+        const snip = ftSnippet(jing.text, "长安");
+        P("FT snippet-bold", !!snip && snip.includes("<b>长安</b>"));
+      }
+      // Worker 扫描（真实 Worker，主线程收结果）
+      let w = null;
+      try { w = new Worker("js/ftworker.js"); } catch (e) { P("WORKER-unavailable " + e, false); }
+      if (w){
+        w.onmessage = ev => {
+          try {
+            const rs = ev.data.results;
+            P("WORKER results>=5 (" + rs.length + ")", rs.length >= 5);
+            P("WORKER sorted", rs.every((r, i) => i === 0 || rs[i-1].n >= r.n));
+            const titles = rs.map(r => r.title);
+            P("WORKER hit-京兆府", titles.includes("京兆府"));
+            P("WORKER hit-原序", titles.includes("原序"));
+            done();
+          } catch (e) { P("WORKER-RES-ERR " + e, false); done(); }
+        };
+        w.onerror = err => { P("WORKER-ERR " + (err.message || err), false); done(); };
+        w.postMessage({q: "长安", docs: docs});
+      } else {
+        done();
+      }
+    } catch (e) { P("FT-ERR " + e, false); done(); }
+  });
+});
+</script>
+</body>
+</html>

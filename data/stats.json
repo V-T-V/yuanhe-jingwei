@@ -1,0 +1,69 @@
+{
+ "states": 145,
+ "states_coord": 145,
+ "counties_listed": 805,
+ "county_entries": 784,
+ "daos_present": [
+  "关内道",
+  "河南道",
+  "河东道",
+  "河北道",
+  "山南道",
+  "江南道",
+  "剑南道"
+ ],
+ "zhens_text": 42,
+ "zhens_lost": 8,
+ "per_dao": {
+  "关内道": {
+   "states": 23,
+   "xian": 125,
+   "lost": 0
+  },
+  "河南道": {
+   "states": 29,
+   "xian": 198,
+   "lost": 0
+  },
+  "河东道": {
+   "states": 18,
+   "xian": 98,
+   "lost": 0
+  },
+  "河北道": {
+   "states": 20,
+   "xian": 139,
+   "lost": 0
+  },
+  "山南道": {
+   "states": 15,
+   "xian": 61,
+   "lost": 9
+  },
+  "淮南道": {
+   "states": 0,
+   "xian": 0,
+   "lost": 6
+  },
+  "江南道": {
+   "states": 35,
+   "xian": 174,
+   "lost": 2
+  },
+  "剑南道": {
+   "states": 5,
+   "xian": 10,
+   "lost": 14
+  },
+  "岭南道": {
+   "states": 0,
+   "xian": 0,
+   "lost": 0
+  },
+  "陇右道": {
+   "states": 0,
+   "xian": 0,
+   "lost": 0
+  }
+ }
+}
