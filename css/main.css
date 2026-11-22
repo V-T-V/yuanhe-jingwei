@@ -377,3 +377,20 @@ body.seldao .xseal.dim{opacity:.12}
 .xsamp .xs-head{font-family:"KaiTi","楷体",serif;font-size:14.5px;letter-spacing:2px;color:var(--ink)}
 .xsamp .xs-q{font-size:12px;color:var(--ink-mid);line-height:1.9;margin:4px 2px 0;text-indent:0}
 .xsamp .xs-src{color:var(--ink-faint);font-size:10.5px;letter-spacing:1px}
+
+/* ── 历代对照 · 子页签与四朝彩蛋卡 ── */
+.tabbar-x{display:flex;gap:6px;margin:8px 0 2px}
+.tabbar-x .tbx{font:12.5px KaiTi,serif;letter-spacing:2px;color:var(--ink-mid);cursor:pointer;
+  background:rgba(246,240,221,.7);border:1px solid var(--line);border-radius:14px;padding:4px 13px}
+.tabbar-x .tbx:hover{border-color:var(--azur);color:var(--azur-d)}
+.tabbar-x .tbx.on{background:var(--azur);color:#f6efdc;border-color:var(--azur-d)}
+.eracard{border:1px solid var(--line);border-left:3px solid var(--azur);border-radius:4px;
+  padding:9px 12px;margin:8px 0;background:rgba(246,240,221,.6)}
+.erastops{display:flex;align-items:stretch;gap:0;margin-top:8px;flex-wrap:wrap;row-gap:6px}
+.estop{display:flex;flex-direction:column;justify-content:center;text-decoration:none;
+  border:1px solid rgba(47,93,112,.4);border-radius:6px;padding:4px 10px;margin:0 2px;
+  font:13px KaiTi,serif;letter-spacing:1px;color:var(--ink);background:rgba(246,240,221,.85)}
+.estop b{color:var(--azur-d);margin-right:5px;font-weight:normal}
+.estop small{font:9.5px FangSong,serif;color:var(--ink-faint);letter-spacing:1px;margin-top:2px}
+.estop:hover{border-color:var(--cinnabar);color:var(--cinnabar-d)}
+.eraarrow{align-self:center;color:var(--ink-faint);font-size:12px;margin:0 3px}

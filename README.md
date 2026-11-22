@@ -16,14 +16,15 @@ python -m http.server 9600
 
 - `#dao=guannei&zhou=华州` —— 道内选中州（刷新/分享保持）
 - `#dao=guannei&zhen=京畿观察使` —— 镇视角直达（纲目展开 + 所领州聚焦）
-- `#xref=1` —— 直达「唐宋对照」页签
+- `#xref=1` / `#xref=han` —— 直达「历代对照」页签（唐→宋 / 汉→唐）
 - `#search=渭水` —— 直达一次检索
 
 快捷键：`Esc` 收面板 · `?` 关于·缺卷记 · `/` 聚焦检索。
 
-> **姊妹站互链约定**：站内「唐宋」页签的 ↗寰宇 深链用相对兄弟路径 `../TPHY/`——
-> 需以父目录同根起服务（在 `D:\W_A_W` 起 `python -m http.server` 后
-> `/YHJZ/`、`/TPHY/` 同源可达）；仅本站单服务时该链接不越站，不影响其余功能。
+> **姊妹站互链约定**：站内「历代」页签的 ↗深链用相对兄弟路径——汉志 `../HSDZ/`、
+> 寰宇 `../TPHY/`、方舆（四朝彩蛋）`../HHH/`——需以父目录同根起服务（在 `D:\W_A_W` 起
+> `python -m http.server` 后各站同源可达）；仅本站单服务时该链接不越站，不影响其余功能。
+> 汉志深链格式 `#bu=<部域id>&jun=<郡名>` 为其实测前端约定（build_xrev_hz.py 逐条校验存在）。
 
 ## 全书与缺卷（如实标注）
 
@@ -59,10 +60,19 @@ python -m http.server 9600
   ——卷帙残佚之实，不以矮柱充数。点柱开卡（文量·柱高依据·沿革节引）并「⟩ 入 2D 州卡」；
   文量字段 `yt` 出自 build_data（正文+县条+名录+所存「八到/贡、赋」佚标签如实计，
   佚失内容无字可计）；无 WebGL 沙箱经 window.YH3D 钩直验数据与交互
-- **唐宋对照**（底栏「唐宋」）：唐 227 州府 ↔ 宋《太平寰宇记》360 条对照
-  （同名 192 · 同治异名 6 · 无对应 29 如实分记；异隶 8 · 升降 4 各为实录）——
-  按道分组计数 + 元和原文句 × 寰宇条目样例 + ↗寰宇 深链（`../TPHY/#dao=…&zhou=…`，
-  姊妹站寰宇经纬数据**只读**）。同名异地（唐渭州≠宋渭州）不入档、寰宇佚卷所失如实注
+- **历代对照**（底栏「历代」· `#xref=1` / `#xref=han`）：双子页纵贯汉唐宋——
+  **唐→宋**：唐 227 州府 ↔ 宋《太平寰宇记》360 条（同名 192 · 同治异名 6 · 无对应 29
+  如实分记；异隶 8 · 升降 4 各为实录），元和原文句 × 寰宇条目样例 + ↗寰宇 深链
+  （`../TPHY/#dao=…&zhou=…`，姊妹站寰宇经纬数据**只读**）。同名异地（唐渭州≠宋渭州）
+  不入档、寰宇佚卷所失如实注；
+  **汉→唐（回程）**：汉志侧桥（HSDZ build_xref_yh.py 判 103 汉郡 ↔ 227 唐州）自唐州
+  反转重组——得汉郡对应 **52**（同名同城 3 · 承名 48 · 迁治 1，对账与汉志侧全等）·
+  唐无对应 175 如实计；汉志句 × 元和句样例 + ↗汉志 深链（`../HSDZ/#bu=…&jun=…`，
+  HSDZ 数据**只读**）。
+  **四朝同地彩蛋**（3 例）：京兆长安（汉京兆尹→唐京兆府→宋雍州→明西安府）·
+  河南洛阳（河南郡→河南府→河南府→河南府）· 蜀成都（蜀郡→成都府→益州→成都府）——
+  四站跨链一路点到底（../HSDZ/ → 本站 → ../TPHY/ → ../HHH/），逐站对四站
+  site_data 校验存在，唐宋段与本站唐宋桥一致
 - **州县导出**（底栏「⤓ 导出」）：州治对照 / 县名录 CSV（带 BOM）+ 州治点位 KML / GeoJSON，
   与 `tools/export_data.py` 同口径（227 州 + 1,081 县），整编坐标逐行注明
 - **镇视角深链**：`#zhen=<镇名>` 直达（纲目展开 + 所领州聚焦 + 写回），展开镇亦写回地址栏
@@ -89,16 +99,18 @@ python -m http.server 9600
 | `js/modes.js` | 深链解析（加载链最末） |
 | `data/site_data.js` | 结构化数据（build_data.py 生成，勿手改） |
 | `data/xref_hy.js` | 唐宋互查桥（build_xref_hy.py 生成；TPHY 只读） |
+| `data/xrev_hz.js` | 汉唐回程桥（build_xrev_hz.py 生成；HSDZ 只读） |
 | `data/text/*.js` | 全文分片（build_text.py 生成，懒加载） |
 | `data/stats.json` | 计数产物（前端与文档数字同源） |
 | `tools/fetch_text.py` | 抓取器：断点续抓 · 限速 ≥1s/页 · UA 自报 · 乱码自愈 · 挑战退避 |
 | `tools/build_data.py` | 解析管线：h/p 块流 → 道/镇/州/县 + 坐标表（derived，置信分级） |
 | `tools/build_text.py` | 全文分片：按道出 data/text/*.js + 卷首 |
 | `tools/build_xref_hy.py` | 唐宋互查桥：读 TPHY 数据（只读）→ 匹配分档 → data/xref_hy.js |
+| `tools/build_xrev_hz.py` | 汉唐回程桥：读 HSDZ 桥与数据（只读）→ 唐州视角反转 → data/xrev_hz.js |
 | `tools/export_data.py` | 古今对照导出：CSV（BOM）/KML/GeoJSON → docs/export/ |
 | `tools/build_paper_pdf.py` | 论文排印：ANALYSIS.md → docs/元和经纬-数字人文.pdf |
 | `tools/lint.py` | 确定性检查（禁止清单 + 互查桥自洽 + 论文 PDF 哨兵，15 类） |
-| `tests/` + `run_tests.py` | 断言页 + 一键回归（lint + 22 数据断言 + 3 无头页，含 3D 文柱沙箱页） |
+| `tests/` + `run_tests.py` | 断言页 + 一键回归（lint + 24 数据断言 + 3 无头页，含 3D 文柱沙箱页） |
 
 脚本为经典 `<script defer>` 链（非 ES Module），file:// 直开与 http 服务均可运行。
 
@@ -119,7 +131,7 @@ python -m http.server 9600
 
 [docs/ANALYSIS.md](docs/ANALYSIS.md)——道级覆盖表（州/县/字数/卷幅）、州县结构、
 山河故城形态计量、镇属规模、唐宋对照、导出口径——数字全出自脚本
-（`tools/stats.py`，唐宋对照出自 `tools/build_xref_hy.py`）。
+（`tools/stats.py`，唐宋对照出自 `tools/build_xref_hy.py`，汉唐回程出自 `tools/build_xrev_hz.py`）。
 论文定本：[docs/元和经纬-数字人文.pdf](docs/元和经纬-数字人文.pdf)（4 页，
 由 `tools/build_paper_pdf.py` 自 ANALYSIS.md 排印；**改 ANALYSIS.md 必须重排 PDF**，
 lint 哨兵会拦）。
@@ -128,8 +140,8 @@ lint 哨兵会拦）。
 
 ```
 python tools/lint.py       # 禁止清单 + 互查桥自洽 + 论文 PDF 哨兵（15 类）
-python run_tests.py        # lint + 22 数据断言 + 3 无头断言页（需本地服务 9600）
-# 管线重入顺序：build_data → build_xref_hy → stats → build_paper_pdf → export_data
+python run_tests.py        # lint + 24 数据断言 + 3 无头断言页（需本地服务 9600）
+# 管线重入顺序：build_data → build_xref_hy → build_xrev_hz → stats → build_paper_pdf → export_data
 ```
 
 ## 数据源与致谢
@@ -137,7 +149,7 @@ python run_tests.py        # lint + 22 数据断言 + 3 无头断言页（需本
 - 文本：识典古籍《钦定四库全书》本《元和郡县志》（shidianguji.com/book/SK0967），
   礼貌抓取（≥1s/页，UA 自报，原始页落 data_raw/ 不进 git）
 - 底图：Esri World Physical Map；地图库自托管（Leaflet）
-- 姊妹站：方舆经纬（读史方舆纪要）· 水道经纬（水经注）——架构同源
+- 姊妹站：方舆经纬（读史方舆纪要·明）· 水道经纬（水经注）· 汉志经纬（汉书地理志·汉）· 寰宇经纬（太平寰宇记·宋）——架构同源，互查桥互联
 
 ## 风险与已知之阙
 
@@ -147,6 +159,9 @@ python run_tests.py        # lint + 22 数据断言 + 3 无头断言页（需本
 - 唐宋桥为名对名+地理今名消歧的自动匹配：同名异地（唐渭州≠宋渭州等 4 例）存疑不计；
   个别匹配注有「寰宇条坐标疑误」（均州 222 km）、「宋治迁移」（原州 93 km）；
   信州/昌州两侧地理今名俱合而寰宇站道标出入（标河北道），已注「异隶」如实并陈
+- 汉唐回程桥为汉志桥（HSDZ）判果的反转重组：匹配档位（同名同城/承名/迁治）承其口径，
+  HSDZ 数据更新后须重跑 `python tools/build_xrev_hz.py`（深链逐条重校，对不上即红）；
+  四朝彩蛋之宋站用寰宇记条目名（雍州/益州——书证与治所同地），明站府名对 HHH 校验
 - 抓取源为在线服务，重抓请 `python tools/fetch_text.py`（断点续抓）
 
 学术引用：[CITATION.cff](CITATION.cff)（CFF 1.2.0 · dataset）——构建产物指纹账本另见 [SHA256SUMS](SHA256SUMS)，`python tools/build_sums.py` 重算、`run_tests.py` 对账。

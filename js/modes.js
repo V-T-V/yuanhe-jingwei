@@ -15,7 +15,8 @@
     return;
   }
   if (q.get("xref")){
-    setTimeout(()=>openXref(), 400);
+    const lv = q.get("xref") === "han" ? "han" : "song";
+    setTimeout(()=>openXref(lv), 400);
     return;
   }
   /* 镇视角：#zhen=<镇名>（与 #dao=/#zhou= 同套写回）；州链优先于镇链 */

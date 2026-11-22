@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="vendor/leaflet.css">
 <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
 <script src="vendor/leaflet.js" defer></script>
-<link rel="stylesheet" href="css/main.css?v=6">
+<link rel="stylesheet" href="css/main.css?v=7">
 </head>
 <body class="nopanel">
 
@@ -77,7 +77,7 @@
   <button class="ftool" id="bmlink" title="我的书签">☆ 书签</button>
   <button class="ftool" id="nightlink" title="夜读墨色">☾ 夜读</button>
   <button class="ftool" id="tdlink" title="三维形胜——真地形上观十道州治">⛰ 形胜</button>
-  <button class="ftool" id="xreflink" title="唐州 ↔ 宋府州对照 · 深链寰宇经纬">唐宋</button>
+  <button class="ftool" id="xreflink" title="历代对照 · 汉唐回程（↗汉志）+ 唐宋（↗寰宇）">历代</button>
   <button class="ftool" id="exportlink" title="州县古今对照导出（CSV/KML/GeoJSON）">⤓ 导出</button>
   <span class="sep"></span>
   <span id="bookstat"></span>
@@ -100,16 +100,17 @@
 <!-- 加载链：解析数据 → 配置 → 地图 → 面板/纲目/检索 → 阅读器 → 全文核 → 启动 → 深链 -->
 <script src="data/site_data.js" defer></script>
 <script src="data/xref_hy.js" defer></script>
-<script src="js/config.js?v=6" defer></script>
-<script src="js/map.js?v=6" defer></script>
-<script src="js/panels.js?v=6" defer></script>
-<script src="js/rail.js?v=6" defer></script>
-<script src="js/search.js?v=6" defer></script>
-<script src="js/reader.js?v=6" defer></script>
-<script src="js/ft_core.js?v=6" defer></script>
-<script src="js/fulltext.js?v=6" defer></script>
-<script src="js/app.js?v=6" defer></script>
-<script src="js/modes.js?v=6" defer></script>
+<script src="data/xrev_hz.js" defer></script>
+<script src="js/config.js?v=7" defer></script>
+<script src="js/map.js?v=7" defer></script>
+<script src="js/panels.js?v=7" defer></script>
+<script src="js/rail.js?v=7" defer></script>
+<script src="js/search.js?v=7" defer></script>
+<script src="js/reader.js?v=7" defer></script>
+<script src="js/ft_core.js?v=7" defer></script>
+<script src="js/fulltext.js?v=7" defer></script>
+<script src="js/app.js?v=7" defer></script>
+<script src="js/modes.js?v=7" defer></script>
 <script>
 /* PWA：HTTP(S) 下注册 Service Worker（file:// 静默跳过，失败不影响站点） */
 if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {

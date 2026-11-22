@@ -191,6 +191,26 @@ if os.path.exists(xref_path):
                   if 'TPHY' in ln and ('"w"' in ln or "'w'" in ln or '"a"' in ln or "'a'" in ln)]
     check(not tphy_write, f"build_xref_hy.py 不写 TPHY（违 {tphy_write[:1] if tphy_write else '无'}）")
 
+    # 回程桥（汉志侧反转）：行数/对账/深链域名
+    xrev_path = "data/xrev_hz.js"
+    check(os.path.exists(xrev_path), "data/xrev_hz.js 存在（python tools/build_xrev_hz.py）")
+    if os.path.exists(xrev_path):
+        vraw = open(xrev_path, encoding="utf-8").read()
+        xrev = json.loads(vraw[vraw.find("{"): vraw.rfind("}") + 1])
+        vm = xrev["meta"]
+        v_rows = xrev["rows"]
+        n_pairs = sum(len(r["han"]) for r in v_rows if r["han"])
+        check(len(v_rows) == n_states, f"回程桥行数 == 州数（{len(v_rows)}=={n_states}）")
+        check(n_pairs == vm["matched_pairs"] == 52
+              and vm["same_name"] + vm["chengming"] + vm["qianyi"] == vm["matched_pairs"],
+              f"回程对账全等（{n_pairs} = 同名同城 {vm['same_name']} + 承名 {vm['chengming']} + 迁治 {vm['qianyi']}）")
+        bad_link = [r["n"] for r in v_rows if r["han"] for h in r["han"]
+                    if not h["buId"] or not h["buId"].isascii()]
+        check(not bad_link, f"回程深链部域 id 齐备（违 {bad_link[:3] if bad_link else '无'}）")
+        hsdz_write = [ln for ln in open("tools/build_xrev_hz.py", encoding="utf-8").read().splitlines()
+                      if 'HSDZ' in ln and ('"w"' in ln or "'w'" in ln or '"a"' in ln or "'a'" in ln)]
+        check(not hsdz_write, f"build_xrev_hz.py 不写 HSDZ（违 {hsdz_write[:1] if hsdz_write else '无'}）")
+
 # ── 15. 论文 PDF 同步哨兵（ANALYSIS.md 改动必须重排 PDF） ──
 print("── 15. 论文 PDF 哨兵")
 pdf_path = "docs/元和经纬-数字人文.pdf"

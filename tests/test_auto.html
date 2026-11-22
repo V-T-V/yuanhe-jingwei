@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/leaflet.css">
 <script>window.__NOTILES__=1;/* 测试密封：不拉外网瓦片 */</script>
 <script src="vendor/leaflet.js"></script>
-<link rel="stylesheet" href="css/main.css?v=6">
+<link rel="stylesheet" href="css/main.css?v=7">
 </head>
 <body class="nopanel">
 <div id="map"></div>
@@ -29,16 +29,17 @@
 
 <script src="data/site_data.js" defer></script>
 <script src="data/xref_hy.js" defer></script>
-<script src="js/config.js?v=6" defer></script>
-<script src="js/map.js?v=6" defer></script>
-<script src="js/panels.js?v=6" defer></script>
-<script src="js/rail.js?v=6" defer></script>
-<script src="js/search.js?v=6" defer></script>
-<script src="js/reader.js?v=6" defer></script>
-<script src="js/ft_core.js?v=6" defer></script>
-<script src="js/fulltext.js?v=6" defer></script>
-<script src="js/app.js?v=6" defer></script>
-<script src="js/modes.js?v=6" defer></script>
+<script src="data/xrev_hz.js" defer></script>
+<script src="js/config.js?v=7" defer></script>
+<script src="js/map.js?v=7" defer></script>
+<script src="js/panels.js?v=7" defer></script>
+<script src="js/rail.js?v=7" defer></script>
+<script src="js/search.js?v=7" defer></script>
+<script src="js/reader.js?v=7" defer></script>
+<script src="js/ft_core.js?v=7" defer></script>
+<script src="js/fulltext.js?v=7" defer></script>
+<script src="js/app.js?v=7" defer></script>
+<script src="js/modes.js?v=7" defer></script>
 <script defer>
 window.addEventListener("load", () => {
   const log = [];
@@ -124,6 +125,36 @@ window.addEventListener("load", () => {
           P("XREF deeplink-../TPHY/", !!xgo && xgo.getAttribute("href").indexOf("../TPHY/#dao=") === 0);
           P("XREF samples-yuanhe-text", pb.textContent.includes("元和郡县图志"));
           P("XREF badges-renamed", pb.querySelectorAll(".xb").length >= 3);
+          P("XREF tabs-2level", pb.querySelectorAll(".tabbar-x .tbx").length === 2);
+          // ⑪b 汉唐回程（v7：历代 · 汉→唐 子页 + 四朝彩蛋）
+          P("XREV data-loaded", typeof YHXREV === "object" && YHXREV.meta.matched_pairs === 52);
+          P("XREV rows=227 (" + YHXREV.rows.length + ")", YHXREV.rows.length === 227);
+          const withHan = YHXREV.rows.filter(r => r.han);
+          P("XREV with-han=52 (" + withHan.length + ")", withHan.length === YHXREV.meta.tang_with_han);
+          openXref("han");
+          pb = document.getElementById("pbody");
+          P("XREV panel-kicker-回程", pb.textContent.includes("回程"));
+          const hgo = pb.querySelector('a.xgo[href^="../HSDZ/#bu="]');
+          P("XREV deeplink-../HSDZ/#bu=", !!hgo);
+          P("XREV samples-han-text", pb.textContent.includes("汉书地理志"));
+          P("XREV badges-承名", pb.textContent.includes("承名"));
+          P("XREV era-cards=3 (" + pb.querySelectorAll(".eracard").length + ")",
+            pb.querySelectorAll(".eracard").length === 3);
+          const estops = pb.querySelectorAll(".eracard .estop");
+          P("XREV era-stops-12 (" + estops.length + ")", estops.length === 12);
+          P("XREV era-links-4sites",
+            [...estops].some(a => a.getAttribute("href").indexOf("../HSDZ/#bu=sili") === 0)
+            && [...estops].some(a => a.getAttribute("href").indexOf("../TPHY/#dao=guanxi") === 0)
+            && [...estops].some(a => a.getAttribute("href").indexOf("../HHH/#mode=舆图&p=shanxix") === 0)
+            && [...estops].some(a => a.getAttribute("href").indexOf("#dao=guannei&zhou=京兆府") === 0));
+          // 彩蛋唐站内链（非 hash 导航，直开州卡）
+          const tangStop = [...estops].find(a => a.getAttribute("href").indexOf("#dao=guannei&zhou=京兆府") === 0);
+          tangStop.click();
+          P("XREV era-tang-opens-state", document.getElementById("vname").textContent.includes("京兆"));
+          openXref("song");
+          pb = document.getElementById("pbody");
+          P("XREV tab-back-to-song", pb.textContent.includes("寰宇")
+            && pb.querySelectorAll(".tabbar-x .tbx").length === 2);
           // ⑫ P2 镇级深链（镇视角：河东节度使领 10 州）
           openZhenView("河东节度使");
           pb = document.getElementById("pbody");

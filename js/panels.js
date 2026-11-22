@@ -174,12 +174,15 @@ function openAbout(){
   showPanel();
 }
 
-/* ═══════════ 唐宋对照 · 寰宇互查桥（data/xref_hy.js，build_xref_hy.py 生成） ═══════════ */
+/* ═══════════ 历代对照 · 互查桥（唐宋 data/xref_hy.js · 汉唐回程 data/xrev_hz.js） ═══════════ */
 function xrefLink(m){
   return "../TPHY/#dao=" + m.id + "&zhou=" + encodeURIComponent(m.n);
 }
-function openXref(){
-  vset("唐宋对照", "桥");
+let xlevel = "song";
+function openXref(level){
+  if (level) xlevel = level;
+  if (xlevel === "han") return openXrev();
+  vset("历代对照", "桥");
   const M = YHXREF.meta;
   const badges = m => {
     let b = "";
@@ -217,6 +220,10 @@ function openXref(){
     </div>`).join("");
   pbody.innerHTML = `
     <div class="p-kicker">元和（唐·813）× 寰宇（宋·977）州府对照 · 凡计数出自 tools/build_xref_hy.py</div>
+    <div class="tabbar-x">
+      <button class="tbx on">唐→宋（${M.matched}/${M.tang_states}）</button>
+      <button class="tbx" data-x="han">汉→唐（${YHXREV.meta.matched_pairs}/${YHXREV.meta.han_juns}）</button>
+    </div>
     <div class="stat-strip" style="margin:2px 0 10px">
       <div class="st"><b>${M.tang_states}</b><span>唐州府</span></div>
       <div class="st"><b>${M.matched}</b><span>得宋对应</span></div>
@@ -231,12 +238,100 @@ function openXref(){
     <div class="p-cap">全表 · 按唐道分组</div>
     ${groups}
     <div class="hint">↗ 于姊妹站「寰宇经纬」打开对应条目（相对路径 ../TPHY/——需父目录同根服务，见 README）。宋侧另有 ${M.song_new} 条（军监新置、四夷、唐佚之州）无唐州对应，不计入唐侧。</div>`;
+  bindXrefTabs();
   pbody.querySelectorAll(".ful li[data-zhou]").forEach(li=>li.onclick=()=>{
     const dao = YH.daos.find(d=>d.id === li.dataset.dao);
     const u = dao && dao.states.find(x=>x.n === li.dataset.zhou);
     if (u) openState(dao, u);
   });
   pbody.querySelectorAll("a.xgo").forEach(a=>a.onclick=e=>e.stopPropagation());
+  showPanel();
+}
+
+function bindXrefTabs(){
+  pbody.querySelectorAll(".tabbar-x .tbx").forEach(b=>b.onclick=()=>{
+    if (b.dataset.x) openXref(b.dataset.x);
+  });
+}
+
+/* ── 汉唐回程（data/xrev_hz.js，build_xrev_hz.py 反转汉志桥；HSDZ 只读） ── */
+function openXrev(){
+  vset("历代对照", "桥");
+  const M = YHXREV.meta;
+  const famBadge = h =>
+    h.fam === "同名同城" ? '<span class="xb xb-s">同名同城</span>'
+    : h.fam === "迁治" ? '<span class="xb xb-r">迁治</span>'
+    : '<span class="xb xb-y">承名</span>';
+  const groups = YHXREV.byDao.map(g=>{
+    const rows = YHXREV.rows.filter(r=>r.dao === g.dao).map(r=>{
+      if (r.han && r.han.length){
+        const hans = r.han.map(h=>
+          `<a class="xgo" style="margin-left:0" href="../HSDZ/#bu=${h.buId}&jun=${encodeURIComponent(h.n)}" target="_blank" rel="noopener" title="于汉志经纬开此郡">${h.n}</a>${famBadge(h)}`).join(" · ");
+        return `<li data-dao="${g.id}" data-zhou="${r.n}">
+          <span class="fn">${r.n}</span>
+          <span class="fnow">${r.now ? "今" + r.now : ""}</span>
+          <span class="fct">${hans}</span></li>`;
+      }
+      return `<li class="lostrow">
+          <span class="fn" style="color:var(--ink-faint)">${r.n}</span>
+          <span class="fnow">汉志无同城对应（如实计）</span></li>`;
+    }).join("");
+    const head = g.dao === "淮南道" ? `${g.dao}（唐整道卷佚，桥无所出）`
+      : `${g.dao} <span style="color:var(--ink-faint)">·得汉郡 ${g.withHan}${g["同名同城"] ? " ·同名同城 " + g["同名同城"] : ""}${g["承名"] ? " ·承名 " + g["承名"] : ""}${g["迁治"] ? " ·迁治 " + g["迁治"] : ""} ·无对应 ${g.total - g.withHan}</span>`;
+    return `<div class="p-cap" style="margin-top:10px">${head}</div><ul class="ful">${rows}</ul>`;
+  }).join("");
+  const samples = YHXREV.samples.map(s=>`
+    <div class="xsamp">
+      <div class="xs-head"><b>汉 · ${s.hn}</b>${s.fam === "同名同城" ? '<span class="xb xb-s">同名同城</span>' : s.fam === "迁治" ? '<span class="xb xb-r">迁治</span>' : '<span class="xb xb-y">承名</span>'}
+        <a class="xgo" href="../HSDZ/#bu=${s.buId}&jun=${encodeURIComponent(s.hn)}" target="_blank" rel="noopener">↗汉志</a></div>
+      <div class="xs-q">「${s.hq}」<span class="xs-src">——汉书地理志</span></div>
+      <div class="xs-head" style="margin-top:6px"><b>唐 · ${s.tn}</b></div>
+      <div class="xs-q">「${s.tq}」<span class="xs-src">——元和郡县图志</span></div>
+    </div>`).join("");
+  const eras = YHXREV.eras.map(e=>`
+    <div class="eracard">
+      <div class="xs-head"><b>${e.title}</b> <span style="font-size:10.5px;color:var(--ink-faint)">今${e.now} · 四朝同地，一站一点到明</span></div>
+      <div class="erastops">${e.stops.map(st=>
+        `<a class="estop" href="${st.href}" ${st.ext ? 'target="_blank" rel="noopener"' : ""}><b>${st.dyn}</b>${st.n}<small>${st.site}</small></a>`).join('<span class="eraarrow">→</span>')}</div>
+    </div>`).join("");
+  pbody.innerHTML = `
+    <div class="p-kicker">汉志（汉书地理志）× 元和（唐·813）郡州对照 · 回程桥，凡计数出自 tools/build_xrev_hz.py（对汉志侧 52 全等）</div>
+    <div class="tabbar-x">
+      <button class="tbx" data-x="song">唐→宋（${YHXREF.meta.matched}/${YHXREF.meta.tang_states}）</button>
+      <button class="tbx on">汉→唐（${M.matched_pairs}/${M.han_juns}）</button>
+    </div>
+    <div class="stat-strip" style="margin:2px 0 10px">
+      <div class="st"><b>${M.han_juns}</b><span>汉郡（汉志侧）</span></div>
+      <div class="st"><b>${M.tang_states}</b><span>唐州府</span></div>
+      <div class="st"><b>${M.matched_pairs}</b><span>得汉郡对应</span></div>
+      <div class="st"><b>${M.same_name}</b><span>同名同城</span></div>
+      <div class="st"><b>${M.chengming}</b><span>承名</span></div>
+      <div class="st"><b>${M.qianyi}</b><span>迁治</span></div>
+    </div>
+    <div class="p-cap">四朝同地 · 汉唐宋明一路点到底（彩蛋）</div>
+    ${eras}
+    <div class="p-cap">样例 · 汉志句 × 元和句</div>
+    ${samples}
+    <div class="hint">回程视角：汉志侧桥（HSDZ build_xref_yh.py 判 103 汉郡 ↔ 227 唐州，得对应 52）自唐州反转重组——同名同城（如京兆尹→京兆府）、承名（唐州承汉郡之名而治同城/同地，如蜀郡→成都府、弘農郡→虢州）、迁治各为一档；唐州无汉对应 ${M.tang_without_han}（汉志侧另有 51 郡无唐对应，两侧如实并计）。汉志为前汉书地理志郡国世界，↗ 深链 ../HSDZ/#bu=&lt;部域id&gt;&amp;jun=&lt;郡名&gt;（实测其前端格式，逐条对 site_data 校验存在）。</div>
+    <div class="p-cap">全表 · 按唐道分组</div>
+    ${groups}
+    <div class="hint">↗郡名 于「汉志经纬」开对应郡卡（相对路径 ../HSDZ/，父目录同根服务）。唐行点击回本站州卡。</div>`;
+  bindXrefTabs();
+  pbody.querySelectorAll(".ful li[data-zhou]").forEach(li=>li.onclick=()=>{
+    const dao = YH.daos.find(d=>d.id === li.dataset.dao);
+    const u = dao && dao.states.find(x=>x.n === li.dataset.zhou);
+    if (u) openState(dao, u);
+  });
+  pbody.querySelectorAll("a.xgo").forEach(a=>a.onclick=e=>e.stopPropagation());
+  /* 彩蛋唐站内链：不走 hash 导航（深链 IIFE 不重跑），直接开州卡 */
+  pbody.querySelectorAll("a.estop:not([target])").forEach(a=>a.onclick=e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const q = new URLSearchParams(a.getAttribute("href").replace(/^#/, ""));
+    const dao = YH.daos.find(d=>d.id === q.get("dao"));
+    const u = dao && dao.states.find(x=>x.n === q.get("zhou"));
+    if (u) openState(dao, u);
+  });
   showPanel();
 }
 

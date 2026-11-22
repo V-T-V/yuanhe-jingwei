@@ -116,6 +116,24 @@ def main():
     top_tbl = "\n".join(f"| {t['n']} | {t['dao']} | {t['xian']} |" for t in top_xian)
     zhen_tbl = "\n".join(f"| {k} | {v} |" for k, v in stats["zhen_members"].items())
 
+    # 汉唐回程桥（data/xrev_hz.js，build_xrev_hz.py 反转汉志桥产物）
+    xrev_path = os.path.join(ROOT, "data", "xrev_hz.js")
+    if os.path.exists(xrev_path) and os.path.exists(os.path.join(ROOT, "data", "xref_hy.js")):
+        vraw = open(xrev_path, encoding="utf-8").read()
+        vfull = json.loads(vraw[vraw.find("{"): vraw.rfind("}") + 1])
+        vm = vfull["meta"]
+        xrev_md = f"""
+### 回程 · 汉唐对照（汉志互查桥，data/xrev_hz.js）
+
+汉志侧桥（姊妹站汉志经纬 build_xref_yh.py，HSDZ 数据只读）判 {vm['han_juns']} 汉郡 ↔ {vm['tang_states']} 唐州、
+得对应 {vm['matched_pairs']}——本站回程视角反转重组，对账全等（{vm['matched_pairs']} = 同名同城 {vm['same_name']} + 承名 {vm['chengming']} + 迁治 {vm['qianyi']}）；
+唐州无汉对应 {vm['tang_without_han']}（汉志侧另有 {vm['han_side_unmatched']} 郡无唐对应，两侧如实并计）。
+四朝同地彩蛋 {len(vfull['eras'])} 例（汉→唐→宋→明 跨链卡：京兆长安 / 河南洛阳 / 蜀成都），
+逐站对四站 site_data 校验存在，唐宋段与本站唐宋桥一致。
+"""
+    else:
+        xrev_md = ""
+
     # 唐宋对照（互查桥产物 data/xref_hy.js，build_xref_hy.py 生成）
     xref_path = os.path.join(ROOT, "data", "xref_hy.js")
     if os.path.exists(xref_path):
@@ -138,7 +156,7 @@ def main():
 
 （同名=去府/州/军/监尾同名且地理今名相合；同治异名如京兆府↔雍州、汴州↔開封府、恒州↔鎮州；
 同名异地如唐渭州（陇西）≠宋渭州（平凉）——存疑不计，不以似是者充数。）
-
+{xrev_md}
 ## 六、古今对照导出
 
 - 州治对照 CSV {stats['states']} 行（道/镇/州府/类/治所今地/纬经/src/置信/卷/管县/坐标注记）

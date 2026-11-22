@@ -149,6 +149,27 @@ A("A22 沿革文柱自洽（yt 阈值与 map3d 同源）",
   and 45 <= n_pillar <= 70 and max(yts) == 10162,
   f"入柱 {n_pillar} 州 · 中位 {sorted(yts)[len(yts) // 2]} 字 · 最大 {max(yts)}（成都府）")
 
+# ── 2d. 汉唐回程桥（xrev_hz.js；对汉志侧 52 全等 + 深链/彩蛋逐条在档）──
+vraw = open("data/xrev_hz.js", encoding="utf-8").read()
+xrev = json.loads(vraw[vraw.find("{"): vraw.rfind("}") + 1])
+vm = xrev["meta"]
+n_pairs = sum(len(r["han"]) for r in xrev["rows"] if r["han"])
+A("A23 汉唐回程桥对账全等", len(xrev["rows"]) == len(states)
+  and n_pairs == vm["matched_pairs"] == 52
+  and vm["same_name"] + vm["chengming"] + vm["qianyi"] == 52
+  and vm["tang_with_han"] + vm["tang_without_han"] == len(states)
+  and all(h["buId"] for r in xrev["rows"] if r["han"] for h in r["han"]),
+  f"得汉郡 {n_pairs}（同名同城 {vm['same_name']} · 承名 {vm['chengming']} · 迁治 {vm['qianyi']}）"
+  f" · 唐无对应 {vm['tang_without_han']} · 彩蛋 {len(xrev['eras'])} 例")
+A("A24 回程深链与四朝彩蛋逐站在档",
+  all(s["buId"] for s in xrev["samples"])
+  and all(len(e["stops"]) == 4 for e in xrev["eras"])
+  and all(any(st["href"].startswith(p) for st in xrev["eras"][0]["stops"])
+          for p in ["../HSDZ/#bu=", "../TPHY/#dao=", "../HHH/#mode=舆图&p="])
+  and any(st["href"].startswith("#dao=") for st in xrev["eras"][0]["stops"]),
+  "样例 %d 组 · 彩蛋首例 %s" % (len(xrev["samples"]),
+    "/".join(st["dyn"] + st["n"] for st in xrev["eras"][0]["stops"])))
+
 # ── 3. 本地服务健康检查 ──
 try:
     urllib.request.urlopen(BASE + "index.html", timeout=3).read()
