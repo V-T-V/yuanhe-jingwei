@@ -8,7 +8,9 @@ CDP over websocket 以 stdlib 自实现，零第三方依赖，本地 / CI 同�
      十道纲目 · 底栏账字 · 双样式表 · 数据全局量到位，并驱动纲目首条 → 面板开；
   ③ 数据层离线可得：断网态 fetch data/ 产物 200 且命中 SW CacheStorage（SHELL 预存）；
      全文分片懒存——仅暖存并验首片（data/text/j01.js；全书 40 片不要求全缓，范围如实注明）。
-任一验失败即非零退出。证据截图落 docs/evidence/offline-index.png。
+  ④ 3D 页断网重载：离线态直航 3d.html——canvas+数据层+图层初始化（boot3d 序幕隐）即绿；
+     远端影像/DEM 瓦片不属离线范围（静默降级，如实注明）。
+任一验失败即非零退出。证据截图落 docs/evidence/offline-{index,3d}.png。
 前置：python -m http.server 9600（YH_BASE 可覆盖）；本地需 Edge/Chrome（YH_BROWSER 可指定）。
 """
 import base64
@@ -40,7 +42,7 @@ CANDS = [
 ]
 BROWSER = next((c for c in CANDS if c and os.path.exists(c)), None)
 
-V = "5"                                     # 与 sw.js VERSION 同步（lint 校验）；本站 data 产物引用不带 ?v
+V = "6"                                     # 与 sw.js VERSION 同步（lint 校验）；本站 data 产物引用不带 ?v
 CORE_DATA = ["data/site_data.js", "data/xref_hy.js"]
 FIRST_SHARD = "data/text/guannei.js"        # 全书 10 片懒存（关内/河南/…按道分片），本验范围=首片
 READ_DATA = None                             # 面板驱动（openDao）不触懒载——道卡数据随 site_data 预存
@@ -303,6 +305,28 @@ def main():
         png = os.path.join(ROOT, "docs", "evidence", "offline-index.png")
         with open(png, "wb") as f:
             f.write(base64.b64decode(shot["data"]))
+
+        # ④ 3D 页断网重载（离线态直接导航——3d.html/maplibre/map3d 已在 SHELL 预存；
+        #    图层初始化双路（load+6.5s 兜底），boot3d 序幕隐去即图层已建；远端影像/DEM
+        #    瓦片不属离线范围——本站无提示元素，静默降级如实注明）
+        c.cmd("Page.navigate", {"url": BASE + "3d.html"})
+        ok3d = False
+        for _ in range(40):
+            if c.ev("document.readyState==='complete'"
+                    " && !!document.querySelector('#map3d .maplibregl-canvas')"
+                    f" && typeof {GLOBAL} !== 'undefined'"
+                    " && !!(document.getElementById('boot3d')||{}).classList"
+                    " && document.getElementById('boot3d').classList.contains('gone')"):
+                ok3d = True
+                break
+            time.sleep(.5)
+        mark("④3d-offline-reload", ok3d,
+             f"canvas+{GLOBAL}+图层初始化（boot3d 序幕已隐）到位；"
+             "远端影像/DEM 静默降级（无提示元素，如实注明）")
+        shot3 = c.cmd("Page.captureScreenshot", {"format": "png"})
+        png3 = os.path.join(ROOT, "docs", "evidence", "offline-3d.png")
+        with open(png3, "wb") as f:
+            f.write(base64.b64decode(shot3["data"]))
 
         ok = all(s["ok"] for s in steps.values())
         print(json.dumps({"ok": ok, "secs": round(time.time() - t0, 1),

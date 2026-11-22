@@ -71,7 +71,9 @@ var map3d = null;
       `<div style='padding:40px;font:14px KaiTi,serif;letter-spacing:2px'>${msg}` +
       `——<a href='index.html' style='color:#b03a25'>回二维舆图</a></div>`;
   };
-  const mapOk = !!window.maplibregl && maplibregl.supported && maplibregl.supported();
+  /* maplibre v4 无 supported() 导出（四站同构建实证）——原门恒 false，3D 从未建图；
+     改 WebGL2 实探（沙箱不载 maplibre 时仍 false，test_3d「无假绿」口径不变） */
+  const mapOk = !!window.maplibregl && !!document.createElement("canvas").getContext("webgl2");
 
   if (!window.maplibregl){
     noMap("三维组件未载入（vendor/maplibre-gl.js）");
@@ -121,7 +123,8 @@ var map3d = null;
       },
       layers: [
         {id: "bg", type: "background", paint: {"background-color": "#e8dcb9"}},
-        {id: "img", type: "raster", source: "img", paint: {"raster-saturation": -0.4, "raster-brightness": 0.95}}
+        {id: "img", type: "raster", source: "img",
+         paint: {"raster-saturation": -0.4, "raster-brightness-max": 0.95}}
       ]
     },
     center: [108, 35], zoom: 3.6, pitch: 42, bearing: -18,
@@ -129,7 +132,12 @@ var map3d = null;
     attributionControl: false, antialias: true
   });
   map3d.addControl(new maplibregl.NavigationControl({visualizePitch: true}), "top-right");
-  map3d.on("load", () => {
+  /* 图层初始化双路：load 事件 + 6.5s 超时兜底——离线时远端瓦片全败 load 永不触发，
+     州点/文柱全挂 load 则离线仅空 canvas（3D 离线补全实测教训）；幂等防重（闭包旗标） */
+  let _3dbooted = false;
+  const boot3Layers = () => {
+    if (_3dbooted) return;
+    _3dbooted = true;
     map3d.setTerrain({source: "dem", exaggeration: 1.35});
     /* 州点：GeoJSON 由 site_data 生成 */
     const feats = [];
@@ -185,7 +193,9 @@ var map3d = null;
 
     const b = document.getElementById("boot3d");
     if (b) b.classList.add("gone");
-  });
+  };
+  map3d.on("load", boot3Layers);
+  setTimeout(() => { if (!_3dbooted && map3d.isStyleLoaded()) boot3Layers(); }, 6500);
 
   /* 开场长镜：自西域掠至关中（拖动即断） */
   let _intro = true;
