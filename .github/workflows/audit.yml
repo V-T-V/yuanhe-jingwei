@@ -1,0 +1,34 @@
+# 周六系列审计（承方舆经纬 audit.yml 范式：错峰调度 + 手动触发，每步失败即红，无吞错兜底——教训 20）。
+# 与方舆 09:30 错峰 10 分钟，六站巡检一个上午依序跑完；证据口径以 Actions 日志为准。
+# 步骤与本仓 ci.yml 同源（确定性子集：lint + 数据断言 + 账目 + 浏览器断言页）。
+name: 深度审计
+on:
+  schedule:
+    - cron: "10 2 * * 6"   # 周六 10:10 CST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 浏览器存在性检验
+        run: |
+          # 与 ci.yml 同款：runner 预装 Chrome，缺件即红，绝不兜底
+          test -x /usr/bin/google-chrome && /usr/bin/google-chrome --version
+      - name: 起本地服务
+        run: |
+          python -m http.server 9600 --bind 127.0.0.1 &
+          # 就绪探针：重试只治冷启动竞态，起不来照样红（非吞错）
+          curl -sf --retry 8 --retry-delay 2 --retry-connrefused http://127.0.0.1:9600/index.html -o /dev/null && echo server-up
+      - name: 无头回归 run_tests.py（lint + 数据断言 + TESTLOG 断言页）
+        env:
+          YH_BROWSER: /usr/bin/google-chrome
+          YH_BASE: http://127.0.0.1:9600/
+        run: python run_tests.py
