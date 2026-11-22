@@ -32,3 +32,8 @@ jobs:
           YH_BROWSER: /usr/bin/google-chrome
           YH_BASE: http://127.0.0.1:9600/
         run: python run_tests.py
+      - name: 离线三验 offline_check（SW 在位 · 断网重载 · 数据层离线可得）
+        env:
+          YH_BROWSER: /usr/bin/google-chrome
+          YH_BASE: http://127.0.0.1:9600/
+        run: python tools/offline_check.py

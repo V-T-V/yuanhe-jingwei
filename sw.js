@@ -2,24 +2,24 @@
    三级缓存：SHELL 外壳预存 · TEXTS 全文懒存 · TILES 瓦片限额存
    VERSION 与 index.html 的 ?v 同步。 */
 
-const VERSION = "v4";
+const VERSION = "v5";
 const SHELL = "yh-" + VERSION + "-shell";
 const TEXTS = "yh-" + VERSION + "-texts";
 const TILES = "yh-" + VERSION + "-tiles";
 const TILE_CAP = 1200;
 const SHELL_FILES = [
   "./", "./index.html", "./3d.html", "./manifest.json",
-  "./css/main.css?v=4",
+  "./css/main.css?v=5",
   "./vendor/leaflet.js", "./vendor/leaflet.css",
   "./vendor/maplibre-gl.js", "./vendor/maplibre-gl.css",
   "./data/site_data.js",
   "./data/xref_hy.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png",
-  "./js/config.js?v=4", "./js/map.js?v=4", "./js/panels.js?v=4",
-  "./js/rail.js?v=4", "./js/search.js?v=4", "./js/reader.js?v=4",
-  "./js/ft_core.js?v=4", "./js/fulltext.js?v=4",
-  "./js/app.js?v=4", "./js/modes.js?v=4",
-  "./js/ftworker.js", "./js/map3d.js?v=4",
+  "./js/config.js?v=5", "./js/map.js?v=5", "./js/panels.js?v=5",
+  "./js/rail.js?v=5", "./js/search.js?v=5", "./js/reader.js?v=5",
+  "./js/ft_core.js?v=5", "./js/fulltext.js?v=5",
+  "./js/app.js?v=5", "./js/modes.js?v=5",
+  "./js/ftworker.js", "./js/map3d.js?v=5",
 ];
 
 self.addEventListener("install", e => {
@@ -43,15 +43,20 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  /* 页面导航：网络优先，离线回退缓存外壳 */
+  /* 页面导航：网络优先；仅 index 响应入壳（任意导航都 put 会把 3d.html 塞进
+     "./index.html" 键——离线打开首页被调包，离线三验实证）；离线先回本页缓存再回外壳 */
   if (req.mode === "navigate") {
+    const isIndex = /\/(index\.html)?$/.test(url.pathname);
     e.respondWith(
       fetch(req).then(r => {
-        const cp = r.clone();
-        caches.open(SHELL).then(c => c.put("./index.html", cp));
+        if (isIndex) {
+          const cp = r.clone();
+          caches.open(SHELL).then(c => c.put("./index.html", cp));
+        }
         return r;
       }).catch(() =>
-        caches.match("./index.html", { ignoreSearch: true })
+        caches.match(req, { ignoreSearch: true })
+          .then(r => r || caches.match("./index.html", { ignoreSearch: true }))
           .then(r => r || Response.error()))
     );
     return;

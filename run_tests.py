@@ -199,8 +199,16 @@ for page in PAGES:
         fails.append((page, [l]))
         print("    FAIL  " + l)
 
+# ── 5. 离线三验（SW 在位 · 断网重载 · 数据层离线可得；audit.yml 亦专步硬跑）──
+ro = subprocess.run([sys.executable, "tools/offline_check.py"],
+                    capture_output=True, text=True, encoding="utf-8", timeout=300)
+print("── 离线三验")
+print(ro.stdout.strip())
+if ro.returncode != 0:
+    fails.append(("offline_check", ["exit %d" % ro.returncode]))
+
 print()
 if fails:
     print(f"回归未过：{sum(len(f[1]) for f in fails)} 个失败项")
     sys.exit(1)
-print("回归通过：lint + 数据断言（A1–A%d）+ %d 断言页全绿" % (A_COUNT, len(PAGES)))
+print("回归通过：lint + 数据断言（A1–A%d）+ %d 断言页 + 离线三验全绿" % (A_COUNT, len(PAGES)))
